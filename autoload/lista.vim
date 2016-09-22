@@ -22,7 +22,7 @@ function! lista#start(default, ...) abort
     let &filetype .= '.lista'
     setlocal cursorline
     if !empty(prompt.start(a:default))
-      let cursor[1] = prompt.indices[line('.')-1] + 1
+      let cursor[1] = get(prompt.indices, line('.')-1, cursor[1]-1) + 1
     endif
   finally
     call lista#util#assign_content(prompt.content)
