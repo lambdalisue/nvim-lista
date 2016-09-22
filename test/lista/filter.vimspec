@@ -20,7 +20,7 @@ Describe lista#filter
   End
 
   Describe #or()
-    It filters candidates by 'word' attribute (ignorecase)
+    It filters candidates (ignorecase)
       let available_indices = lista#filter#or(
             \ indices, candidates, ['a', '10', '5',], 1
             \)
@@ -37,7 +37,7 @@ Describe lista#filter
             \])
     End
 
-    It filters candidates by 'word' attribute (noignorecase)
+    It filters candidates (noignorecase)
       let available_indices = lista#filter#or(
             \ indices, candidates, ['a', '10', '5',], 0
             \)
@@ -53,7 +53,7 @@ Describe lista#filter
     End
 
     Describe s:or_vim()
-      It filters candidates by 'word' attribute (ignorecase)
+      It filters candidates (ignorecase)
         let available_indices = sf.or_vim(
               \ indices, candidates, ['a', '10', '5',], 1
               \)
@@ -70,7 +70,7 @@ Describe lista#filter
               \])
       End
 
-      It filters candidates by 'word' attribute (noignorecase)
+      It filters candidates (noignorecase)
         let available_indices = sf.or_vim(
               \ indices, candidates, ['a', '10', '5',], 0
               \)
@@ -88,7 +88,7 @@ Describe lista#filter
 
     if has('lua')
       Describe s:or_lua()
-        It filters candidates by 'word' attribute (ignorecase)
+        It filters candidates (ignorecase)
           let available_indices = sf.or_lua(
                 \ indices, candidates, ['a', '10', '5',], 1
                 \)
@@ -105,7 +105,7 @@ Describe lista#filter
                 \])
         End
 
-        It filters candidates by 'word' attribute (noignorecase)
+        It filters candidates (noignorecase)
           let available_indices = sf.or_lua(
                 \ indices, candidates, ['a', '10', '5',], 0
                 \)
@@ -124,7 +124,7 @@ Describe lista#filter
 
     if !has('nvim') && has('python')
       Describe s:or_python()
-        It filters candidates by 'word' attribute (ignorecase)
+        It filters candidates (ignorecase)
           let available_indices = sf.or_python(
                 \ indices, candidates, ['a', '10', '5',], 1
                 \)
@@ -141,7 +141,7 @@ Describe lista#filter
                 \])
         End
 
-        It filters candidates by 'word' attribute (noignorecase)
+        It filters candidates (noignorecase)
           let available_indices = sf.or_python(
                 \ indices, candidates, ['a', '10', '5',], 0
                 \)
@@ -160,7 +160,7 @@ Describe lista#filter
 
     if !has('nvim') && has('python3')
       Describe s:or_python3()
-        It filters candidates by 'word' attribute (ignorecase)
+        It filters candidates (ignorecase)
           let available_indices = sf.or_python3(
                 \ indices, candidates, ['a', '10', '5',], 1
                 \)
@@ -177,7 +177,7 @@ Describe lista#filter
                 \])
         End
 
-        It filters candidates by 'word' attribute (noignorecase)
+        It filters candidates (noignorecase)
           let available_indices = sf.or_python3(
                 \ indices, candidates, ['a', '10', '5',], 0
                 \)

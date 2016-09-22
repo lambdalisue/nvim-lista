@@ -1,7 +1,7 @@
 language: generic
 sudo: false
 env:
-  - VERSION=SYSTEM
+  - VERSION=7.4.2137
   - VERSION=HEAD
   - VERSION=nvim
 os:
