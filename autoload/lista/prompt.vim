@@ -7,7 +7,9 @@ let s:prompt = {}
 
 function! s:prompt.start(...) abort
   let self.input = get(a:000, 0, self.input)
-  return call(s:parent.start, [], self)
+  let result = call(s:parent.start, [], self)
+  call self.remove_highlights()
+  return result
 endfunction
 
 function! s:prompt.keydown(key, char) abort
@@ -49,10 +51,7 @@ function! s:prompt.callback() abort
     return
   endif
   " Highlight patterns used
-  call filter(
-        \ get(self, '_match_ids', []),
-        \ 'matchdelete(v:val) == 0'
-        \)
+  call self.remove_highlights()
   let self._match_ids = map(
         \ copy(patterns),
         \ 'matchadd(''Search'', s:String.escape_pattern(v:val), 0)'
@@ -70,6 +69,10 @@ function! s:prompt.content(content) abort
     call gurad.restore()
     keepjump call winrestview(saved_view)
   endtry
+endfunction
+
+function! s:prompt.remove_highlights() abort
+  call filter(get(self, '_match_ids', []), 'matchdelete(v:val) == 0')
 endfunction
 
 function! lista#prompt#new() abort
