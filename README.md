@@ -12,7 +12,7 @@ Introductions
 -------------------------------------------------------------------------------
 [![asciicast](https://asciinema.org/a/86616.png)](https://asciinema.org/a/86616)
 
-**Note: This plugin is an experimental plugin**.
+**Note: This plugin is experimental**.
 
 Install
 -------------------------------------------------------------------------------
@@ -24,3 +24,12 @@ Plug 'lambdalisue/vim-lista'
 Usage
 -------------------------------------------------------------------------------
 Execute `:Lista` and use `<C-n>/<C-p>` to select a candidate and hit `<CR>` to jump.
+
+
+See also
+-------------------------------------------------------------------------------
+This plugin has inspired by the following plugins.
+
+- [osyo-manga/vim-hopping](https://github.com/osyo-manga/vim-hopping)
+- [Shougo/denite.nvim](https://github.com/Shougo/denite.nvim)
+- [Shougo/unite.vim](https://github.com/Shougo/unite.vim)

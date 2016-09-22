@@ -14,9 +14,16 @@ INTRODUCTION			|lista-introduction|
 ==============================================================================
 INTRODUCTION				*lista-introduction*
 
+Note: This plugin is an experimental plugin.
+
 Filter buffer content and jump.
 
-Note: This plugin is an experimental plugin.
+
+This plugin has inspired by the following plugins.
+
+osyo-manga/vim-hopping:	https://github.com/osyo-manga/vim-hopping
+Shougo/denite.nvim:	https://github.com/Shougo/denite.nvim
+Shougo/unite.vim:	https://github.com/Shougo/unite.vim
 
 ==============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
