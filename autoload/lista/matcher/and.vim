@@ -141,7 +141,7 @@ EOF
 endif
 
 
-call s:Config.define('lista#matcher#or', {
+call s:Config.define('lista#matcher#and', {
       \ 'lua': has('lua'),
       \ 'python': !has('nvim') && has('python'),
       \ 'python3': !has('nvim') && has('python3'),
