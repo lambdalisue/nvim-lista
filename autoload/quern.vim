@@ -1,69 +1,29 @@
 let s:Guard = vital#quern#import('Vim.Guard')
-let s:Prompt = vital#quern#import('Vim.Prompt')
 
 function! quern#start() abort
   let guard = s:Guard.store([
-        \ '&cursorline',
-        \ '&conceallevel',
-        \ '&concealcursor'
+        \ '&bufhidden',
         \])
-  let cursor = getpos('.')
-  let content = getline(1, '$')
-  let mid = matchadd('Conceal', '^\d\+:', 10, -1, {'conceal': ''})
-  try
-    set cursorline
-    set conceallevel=3
-    set concealcursor=nvic
-    let prompt = s:Prompt.new({ 'prefix': '# ' })
-    let prompt = extend(prompt, s:prompt)
-    let prompt.bufnr = bufnr('%')
-    let prompt.candidates = map(copy(content), '(v:key + 1) . '':'' . v:val')
-    let cursor[1] = 1
-    call setpos('.', cursor)
-    call s:assign_content(prompt.candidates)
-    call prompt.start()
-    let cursor[1] = str2nr(matchstr(getline('.'), '^\d\+\ze:'))
-  finally
-    call guard.restore()
-    call s:assign_content(content)
-    call setpos('.', cursor)
-    call matchdelete(mid)
-  endtry
-endfunction
-
-function! s:assign_content(content) abort
-  let gurad = s:Guard.store(['&modifiable', '&modified'])
+  let prompt = quern#prompt#get()
   let saved_view = winsaveview()
+  let cursor = getpos('.')
+  let filename = bufname('%')
+  let filetype = &filetype
   try
-    set modifiable
-    silent keepjumps %delete _
-    call setline(1, a:content)
+    setlocal bufhidden=hide
+    noautocmd execute 'keepjumps edit' 'quern://' . filename
+    setlocal cursorline
+    setlocal nobuflisted
+    setlocal buftype=nofile
+    setlocal bufhidden=wipe
+    execute 'setlocal filetype=' . filetype . '.quern'
+    if !empty(prompt.start())
+      let cursor[1] = prompt._indices[line('.')-1] + 1
+    endif
+    noautocmd execute 'keepjumps' prompt._bufnum 'buffer'
   finally
     keepjump call winrestview(saved_view)
-    call gurad.restore()
+    call guard.restore()
+    call setpos('.', cursor)
   endtry
-endfunction
-
-function! s:define_syntax() abort
-  call matchadd('QuernLineNum', '^\d\+:', 10, -1, {'conceal': ''})
-endfunction
-
-let s:prompt = {}
-
-function! s:prompt.callback() abort
-  let candidates = filter(
-        \ copy(self.candidates),
-        \ 'v:val =~# self.input'
-        \)
-  call s:assign_content(candidates)
-endfunction
-
-function! s:prompt.keydown(key, char) abort
-  if a:char ==# "\<C-N>"
-    call setpos('.', [0, line(".")+1, col('.'), 0])
-    return 1
-  elseif a:char ==# "\<C-P>"
-    call setpos('.', [0, line(".")-1, col('.'), 0])
-    return 1
-  endif
 endfunction
