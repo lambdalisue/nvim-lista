@@ -177,7 +177,10 @@ function! s:_new_undolist() abort
   return undolist
 endfunction
 function! s:undolist.restore() abort
-  execute 'silent rundo' self.tempfile
+  " NOTE: undofile may not exist
+  if filereadable(self.tempfile)
+    execute 'silent rundo' self.tempfile
+  endif
 endfunction
 
 let s:winview = {}
