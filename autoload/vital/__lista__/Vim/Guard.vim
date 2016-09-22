@@ -169,6 +169,8 @@ function! s:instance.restore() abort
   call extend(self.instance, self.values)
 endfunction
 
+" REF:
+" https://github.com/osyo-manga/vim-hopping/blob/master/autoload/vital/_hopping/Unlocker/Holder/Buffer/Undofile.vim
 let s:undolist = {}
 function! s:_new_undolist() abort
   let undolist = copy(s:undolist)
@@ -177,7 +179,6 @@ function! s:_new_undolist() abort
   return undolist
 endfunction
 function! s:undolist.restore() abort
-  " NOTE: undofile may not exist
   if filereadable(self.tempfile)
     execute 'silent rundo' self.tempfile
   endif

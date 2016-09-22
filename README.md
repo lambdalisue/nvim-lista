@@ -28,8 +28,8 @@ Execute `:Lista` and use `<C-n>/<C-p>` to select a candidate and hit `<CR>` to j
 
 See also
 -------------------------------------------------------------------------------
-This plugin has inspired by the following plugins.
+This plugin has partially forked from or inspired by the following plugins.
 
+- [Shougo/unite.vim](https://github.com/Shougo/unite.vim)
 - [osyo-manga/vim-hopping](https://github.com/osyo-manga/vim-hopping)
 - [Shougo/denite.nvim](https://github.com/Shougo/denite.nvim)
-- [Shougo/unite.vim](https://github.com/Shougo/unite.vim)

@@ -5,3 +5,4 @@ Vim.Prompt
 Vim.Guard
 Data.String
 App.Config
+Argument
