@@ -1,9 +1,11 @@
 let s:Config = vital#lista#import('App.Config')
+let s:matcher = { 'name': 'fuzzy' }
 
 
 " Public ---------------------------------------------------------------------
 function! lista#matcher#fuzzy#define(...) abort
   let matcher = copy(s:matcher)
+  let matcher.pattern = function('s:pattern')
   if g:lista#matcher#fuzzy#lua
     let matcher.filter = function('s:filter_lua')
     let matcher.implementation = 'lua'
@@ -21,12 +23,10 @@ function! lista#matcher#fuzzy#define(...) abort
 endfunction
 
 
-" Matcher --------------------------------------------------------------------
-let s:matcher = { 'name': 'fuzzy' }
-
+" Private --------------------------------------------------------------------
 " REF:
 " https://github.com/Shougo/unite.vim/blob/master/autoload/unite/filters/matcher_fuzzy.vim#L40
-function! s:matcher.pattern(input) abort
+function! s:pattern(input) abort
   if empty(a:input)
     return ''
   endif
@@ -35,10 +35,8 @@ function! s:matcher.pattern(input) abort
   return join(chars, '')
 endfunction
 
-
-" Private --------------------------------------------------------------------
-function! s:filter_vim(input, indices, candidates) abort dict
-  let pattern = self.pattern(a:input)
+function! s:filter_vim(input, indices, candidates) abort
+  let pattern = s:pattern(a:input)
   return filter(a:indices, 'a:candidates[v:val] =~ pattern')
 endfunction
 

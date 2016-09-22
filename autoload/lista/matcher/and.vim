@@ -1,16 +1,18 @@
 let s:Config = vital#lista#import('App.Config')
+let s:matcher = { 'name': 'or' }
 
 
 " Public ---------------------------------------------------------------------
-function! lista#matcher#or#define(...) abort
+function! lista#matcher#and#define(...) abort
   let matcher = copy(s:matcher)
-  if g:lista#matcher#or#lua
+  let matcher.pattern = function('s:pattern')
+  if g:lista#matcher#and#lua
     let matcher.filter = function('s:filter_lua')
     let matcher.implementation = 'lua'
-  elseif g:lista#matcher#or#python
+  elseif g:lista#matcher#and#python
     let matcher.filter = function('s:filter_python')
     let matcher.implementation = 'python'
-  elseif g:lista#matcher#or#python3
+  elseif g:lista#matcher#and#python3
     let matcher.filter = function('s:filter_python3')
     let matcher.implementation = 'python3'
   else
@@ -21,10 +23,8 @@ function! lista#matcher#or#define(...) abort
 endfunction
 
 
-" Matcher --------------------------------------------------------------------
-let s:matcher = { 'name': 'or' }
-
-function! s:matcher.pattern(input) abort
+" Private --------------------------------------------------------------------
+function! s:pattern(input) abort
   if empty(a:input)
     return ''
   endif
@@ -32,11 +32,25 @@ function! s:matcher.pattern(input) abort
   return '\%(' . join(terms, '\|') . '\)'
 endfunction
 
-
-" Private --------------------------------------------------------------------
 function! s:filter_vim(input, indices, candidates) abort dict
-  let pattern = self.pattern(a:input)
-  return filter(a:indices, 'a:candidates[v:val] =~ pattern')
+  let patterns = split(a:input)
+  if &ignorecase
+    let patterns = map(patterns, 'lista#util#escape_pattern_vim(v:val)')
+    for pattern in patterns
+      call filter(
+            \ a:indices,
+            \ 'a:candidates[v:val] =~? pattern'
+            \)
+    endfor
+  else
+    for pattern in patterns
+      call filter(
+            \ a:indices,
+            \ 'stridx(a:candidates[v:val], pattern) != -1'
+            \)
+    endfor
+  endif
+  return a:indices
 endfunction
 
 if has('lua')
