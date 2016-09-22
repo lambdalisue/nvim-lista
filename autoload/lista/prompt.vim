@@ -52,7 +52,7 @@ function! s:prompt.callback() abort
   endif
   " Highlight patterns used
   call self.remove_highlights()
-  let self._match_ids = map(
+  let self._matchids = map(
         \ copy(patterns),
         \ 'matchadd(''Search'', s:String.escape_pattern(v:val), 0)'
         \)
@@ -72,7 +72,7 @@ function! s:prompt.content(content) abort
 endfunction
 
 function! s:prompt.remove_highlights() abort
-  call filter(get(self, '_match_ids', []), 'matchdelete(v:val) == 0')
+  call filter(self._matchids, 'matchdelete(v:val)')
 endfunction
 
 function! lista#prompt#new() abort
@@ -80,6 +80,7 @@ function! lista#prompt#new() abort
         \ 'prefix': '# ',
         \ '_bufnum': bufnr('%'),
         \})
+  let prompt._matchids = []
   let prompt._previous = ''
   let prompt._candidates = getline(1, '$')
   let b:lista_prompt = extend(prompt, s:prompt)
