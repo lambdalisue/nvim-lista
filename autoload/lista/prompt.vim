@@ -61,15 +61,17 @@ function! s:prompt.callback() abort
 endfunction
 
 function! s:prompt.content(content) abort
-  let saved_view = winsaveview()
-  let gurad = s:Guard.store(['&modifiable', '&modified'])
+  let gurad = s:Guard.store([
+        \ '&modifiable',
+        \ '&modified',
+        \ 'winview',
+        \])
   try
     set modifiable
     silent keepjumps %delete _
     call setline(1, a:content)
   finally
     call gurad.restore()
-    keepjump call winrestview(saved_view)
   endtry
 endfunction
 
