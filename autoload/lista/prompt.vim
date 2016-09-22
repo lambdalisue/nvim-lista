@@ -1,4 +1,5 @@
 let s:Guard = vital#lista#import('Vim.Guard')
+let s:Config = vital#lista#import('App.Config')
 let s:String = vital#lista#import('Data.String')
 let s:Prompt = vital#lista#import('Vim.Prompt')
 let s:parent = s:Prompt.new()
@@ -43,6 +44,19 @@ function! s:prompt.callback() abort
         \ 'self._candidates[v:val]'
         \)
   call self.content(candidates)
+
+  if g:lista#prompt#disable_highlight
+    return
+  endif
+  " Highlight patterns used
+  call filter(
+        \ get(self, '_match_ids', []),
+        \ 'matchdelete(v:val) == 0'
+        \)
+  let self._match_ids = map(
+        \ copy(patterns),
+        \ 'matchadd(''Search'', s:String.escape_pattern(v:val), 0)'
+        \)
 endfunction
 
 function! s:prompt.content(content) abort
@@ -80,3 +94,8 @@ function! lista#prompt#get() abort
   endif
   return prompt
 endfunction
+
+
+call s:Config.define('lista#prompt', {
+      \ 'disable_highlight': 0,
+      \})
