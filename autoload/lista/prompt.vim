@@ -8,7 +8,9 @@ let s:prompt = {}
 function! s:prompt.start(...) abort
   let self.input = get(a:000, 0, self.input)
   let result = call(s:parent.start, [], self)
+  let patterns = filter(split(self.input), '!empty(v:val)')
   call self.remove_highlights()
+  call setreg('/', '\<\%(' . join(patterns, '\|') . '\)\>')
   return result
 endfunction
 
