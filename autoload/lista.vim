@@ -64,6 +64,6 @@ endfunction
 
 call s:Config.define('lista', {
       \ 'prefix': '# ',
-      \ 'matcher': 'or',
+      \ 'matcher': 'and',
       \ 'highlight': 1,
       \})

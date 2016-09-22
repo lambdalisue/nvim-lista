@@ -6,7 +6,7 @@ function! lista#matcher#get(name, ...) abort
           \ a:000,
           \)
   catch /^Vim\%((\a\+)\)\=:E117/
-    let matcher = lista#matcher#or#define()
+    let matcher = lista#matcher#and#define()
   endtry
   return extend(matcher, s:matcher)
 endfunction
