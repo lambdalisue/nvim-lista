@@ -22,7 +22,7 @@ endfunction
 
 function! s:cursor.rshift(...) abort
   let amount = get(a:000, 0, 1)
-  let threshold = strchars(self.prompt.input)
+  let threshold = strchars(self.prompt.input, 1)
   let self.index += amount
   let self.index = self.index >= threshold ? threshold : self.index
 endfunction
@@ -32,25 +32,21 @@ function! s:cursor.home() abort
 endfunction
 
 function! s:cursor.end() abort
-  let self.index = strchars(self.prompt.input)
+  let self.index = strchars(self.prompt.input, 1)
 endfunction
 
 function! s:cursor.ltext() abort
   return self.index == 0
         \ ? ''
-        \ : strcharpart(self.prompt.input, 0, self.index)
+        \ : s:substr(self.prompt.input, 0, self.index-1)
 endfunction
 
 function! s:cursor.ctext() abort
-  return strcharpart(self.prompt.input, self.index, 1)
+  return s:substr(self.prompt.input, self.index, self.index)
 endfunction
 
 function! s:cursor.rtext() abort
-  return strcharpart(
-        \ self.prompt.input,
-        \ self.index+1,
-        \ strchars(self.prompt.input) - self.index
-        \)
+  return s:substr(self.prompt.input, self.index+1, -1)
 endfunction
 
 
@@ -118,12 +114,7 @@ function! s:prompt.start(...) abort
     elseif key ==# "\<Down>"
       call self.history.next()
     elseif !self.keydown(key, char)
-      if char =~# '[^\x00-\x7F]'
-        " XXX: Skip non-ascii character
-        continue
-      else
-        call self.insert(char)
-      endif
+      call self.insert(char)
     endif
   endwhile
   redraw | echo
@@ -136,7 +127,7 @@ endfunction
 
 function! s:prompt.replace(text) abort
   let self.input = a:text
-  let self.cursor.index = strchars(a:text)
+  let self.cursor.index = strchars(a:text, 1)
 endfunction
 
 function! s:prompt.insert(text) abort
@@ -151,7 +142,7 @@ function! s:prompt.remove() abort
   if empty(lhs)
     return
   endif
-  let lhs = strcharpart(lhs, 0, strchars(lhs)-1)
+  let lhs = s:substr(lhs, 0, -2)
   let rhs = self.cursor.ctext() . self.cursor.rtext()
   let self.input = lhs . rhs
   call self.cursor.lshift()
@@ -169,4 +160,9 @@ endfunction
 
 function! s:prompt.callback() abort
   return 0
+endfunction
+
+function! s:substr(src, s, e) abort
+  let chars = split(a:src, '\zs')
+  return join(chars[a:s : a:e], '')
 endfunction
