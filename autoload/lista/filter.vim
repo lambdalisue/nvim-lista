@@ -102,19 +102,19 @@ endif
 " In nvim: vim << python < python3
 " https://gist.github.com/7bd3235de531c5dfac05a2f2fe7ddbf0#file-test2-vim
 if has('lua')
-  function! quern#filter#or(...) abort
+  function! lista#filter#or(...) abort
     return call('s:or_lua', a:000)
   endfunction
 elseif !has('nvim') && has('python')
-  function! quern#filter#or(...) abort
+  function! lista#filter#or(...) abort
     return call('s:or_python', a:000)
   endfunction
 elseif !has('nvim') && has('python3')
-  function! quern#filter#or(...) abort
+  function! lista#filter#or(...) abort
     return call('s:or_python3', a:000)
   endfunction
 else
-  function! quern#filter#or(...) abort
+  function! lista#filter#or(...) abort
     return call('s:or_vim', a:000)
   endfunction
 endif

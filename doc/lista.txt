@@ -1,0 +1,22 @@
+*lista.txt*		A simple list filtering interface for buffer lines
+
+Version: 1.0.0
+Author : Alisue <lambdalisue@hashnote.net>
+License: MIT license
+Support: Vim 7.4 and above
+
+
+==============================================================================
+CONTENTS				*lista-contents*
+
+INTRODUCTION			|lista-introduction|
+
+==============================================================================
+INTRODUCTION				*lista-introduction*
+
+Filter buffer content and jump.
+
+Note: This plugin is an experimental plugin.
+
+==============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl

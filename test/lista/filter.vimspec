@@ -1,9 +1,9 @@
-Describe quern#filter
+Describe lista#filter
   Before all
     let Path = vital#vital#import('System.Filepath')
     let Guard = vital#vital#import('Vim.Guard')
     let scope = themis#helper('scope')
-    let sfile = Path.realpath('autoload/quern/filter.vim')
+    let sfile = Path.realpath('autoload/lista/filter.vim')
     let candidates = []
     let candidates += map(range(1, 1000), '''A'' . string(v:val)')
     let candidates += map(range(1, 1000), '''a'' . string(v:val)')
@@ -21,7 +21,7 @@ Describe quern#filter
 
   Describe #or()
     It filters candidates by 'word' attribute (ignorecase)
-      let available_indices = quern#filter#or(
+      let available_indices = lista#filter#or(
             \ indices, candidates, ['a', '10', '5',], 1
             \)
       let available_candidates = map(
@@ -38,7 +38,7 @@ Describe quern#filter
     End
 
     It filters candidates by 'word' attribute (noignorecase)
-      let available_indices = quern#filter#or(
+      let available_indices = lista#filter#or(
             \ indices, candidates, ['a', '10', '5',], 0
             \)
       let available_candidates = map(

@@ -1,6 +1,6 @@
-let s:Guard = vital#quern#import('Vim.Guard')
-let s:String = vital#quern#import('Data.String')
-let s:Prompt = vital#quern#import('Vim.Prompt')
+let s:Guard = vital#lista#import('Vim.Guard')
+let s:String = vital#lista#import('Data.String')
+let s:Prompt = vital#lista#import('Vim.Prompt')
 let s:parent = s:Prompt.new()
 let s:prompt = {}
 
@@ -24,14 +24,14 @@ function! s:prompt.callback() abort
   let previous = self._previous
   let self._previous = self.input
   if empty(previous) || self.input !~# '^' . s:String.escape_pattern(previous)
-    let self._indices = quern#filter#or(
+    let self._indices = lista#filter#or(
           \ range(len(self._candidates)),
           \ self._candidates,
           \ patterns,
           \ &ignorecase,
           \)
   else
-    let self._indices = quern#filter#or(
+    let self._indices = lista#filter#or(
           \ self._indices,
           \ self._candidates,
           \ patterns,
@@ -58,21 +58,21 @@ function! s:prompt.content(content) abort
   endtry
 endfunction
 
-function! quern#prompt#new() abort
+function! lista#prompt#new() abort
   let prompt = s:Prompt.new({
         \ 'prefix': '# ',
         \ '_bufnum': bufnr('%'),
         \})
   let prompt._previous = ''
   let prompt._candidates = getline(1, '$')
-  let b:quern_prompt = extend(prompt, s:prompt)
+  let b:lista_prompt = extend(prompt, s:prompt)
   return prompt
 endfunction
 
-function! quern#prompt#get() abort
-  let prompt = exists('b:quern_prompt')
-        \ ? b:quern_prompt
-        \ : quern#prompt#new()
+function! lista#prompt#get() abort
+  let prompt = exists('b:lista_prompt')
+        \ ? b:lista_prompt
+        \ : lista#prompt#new()
   let content = getline(1, '$')
   if prompt._candidates != content
     let prompt._previous = ''
