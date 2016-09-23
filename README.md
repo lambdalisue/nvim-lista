@@ -23,7 +23,7 @@ Plug 'lambdalisue/vim-lista'
 
 Usage
 -------------------------------------------------------------------------------
-Execute `:Lista` and use `<C-n>/<C-p>` to select a candidate and hit `<CR>` to jump.
+Execute `:Lista` or `:ListaCursorWord` and use the followings.
 
 Key		| Description
 --------------- | ---------------------------------------------------------------
@@ -50,6 +50,14 @@ Key		| Description
 `<C-p>`		| Select a previous line
 `<C-^>`		| Switch a matcher
 
+I personally assign the command to `#` and `g#` like:
+
+```vim
+nnoremap # :<C-u>Lista<CR>
+nnoremap g# :<C-u>ListaCursorWord<CR>
+```
+
+Note that multi-byte characters are not supported only in GVim.
 
 See also
 -------------------------------------------------------------------------------
