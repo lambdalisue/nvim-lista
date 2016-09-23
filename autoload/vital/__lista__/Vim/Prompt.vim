@@ -83,6 +83,7 @@ let s:prompt = {
 function! s:prompt.start(...) abort
   call inputsave()
   let self.input = get(a:000, 0, self.input)
+  let self.cursor.end()
   while !self.callback()
     redraw
     echohl Question | echon self.prefix
