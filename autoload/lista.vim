@@ -1,15 +1,20 @@
 let s:Guard = vital#lista#import('Vim.Guard')
 let s:Config = vital#lista#import('App.Config')
 let s:Argument = vital#lista#import('Argument')
+let s:Validator = vital#lista#import('Data.Validator')
 
-
+call s:Config.define('lista', {
+      \ 'prefix': '# ',
+      \ 'matcher': 'and',
+      \ 'highlight': 1,
+      \})
+let s:rule = s:Validator.new({
+      \ 'prefix': { 'type': type(''), 'default': g:lista#prefix },
+      \ 'matcher': { 'type': type(''), 'default': g:lista#matcher },
+      \ 'highlight': { 'type': type(0), 'default': g:lista#highlight },
+      \})
 function! lista#start(default, ...) abort
-  let options = extend({
-        \ 'prefix': g:lista#prefix,
-        \ 'matcher': g:lista#matcher,
-        \ 'highlight': g:lista#highlight,
-        \}, get(a:000, 0, {}),
-        \)
+  let options = s:rule.validate(get(a:000, 0, {}))
   let guard = s:Guard.store([
         \ '&cursorline',
         \ '&filetype',
@@ -25,12 +30,11 @@ function! lista#start(default, ...) abort
       let cursor[1] = get(prompt.indices, line('.')-1, cursor[1]-1) + 1
     endif
   finally
-    call lista#util#assign_content(prompt.content)
+    call prompt.restore()
     call guard.restore()
     call setpos('.', cursor)
   endtry
 endfunction
-
 
 function! lista#command(bang, range, qargs, ...) abort
   let cursorword = get(a:000, 0, 0)
@@ -60,10 +64,3 @@ function! lista#complete(arglead, cmdline, cursorpos) abort
   endif
   return filter(candidates, 'v:val =~# ''^'' . a:arglead')
 endfunction
-
-
-call s:Config.define('lista', {
-      \ 'prefix': '# ',
-      \ 'matcher': 'and',
-      \ 'highlight': 1,
-      \})

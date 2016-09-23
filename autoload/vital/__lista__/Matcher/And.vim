@@ -1,56 +1,33 @@
-let s:Config = vital#lista#import('App.Config')
-let s:matcher = { 'name': 'or' }
-
-
-" Public ---------------------------------------------------------------------
-function! lista#matcher#and#define(...) abort
-  let matcher = copy(s:matcher)
-  let matcher.pattern = function('s:pattern')
-  if g:lista#matcher#and#lua
-    let matcher.filter = function('s:filter_lua')
-    let matcher.implementation = 'lua'
-  elseif g:lista#matcher#and#python
-    let matcher.filter = function('s:filter_python')
-    let matcher.implementation = 'python'
-  elseif g:lista#matcher#and#python3
-    let matcher.filter = function('s:filter_python3')
-    let matcher.implementation = 'python3'
-  else
-    let matcher.filter = function('s:filter_vim')
-    let matcher.implementation = 'vim'
-  endif
-  return matcher
+function! s:_vital_loaded(V) abort
+  let s:String = a:V.import('Data.String')
 endfunction
 
+function! s:_vital_depends() abort
+  return ['Data.String']
+endfunction
 
-" Private --------------------------------------------------------------------
+function! s:_vital_created(module) abort
+  if exists('*s:filter_lua')
+    let a:module.filter = function('s:filter_lua')
+    let a:module.implementation = 'lua'
+  elseif exists('*s:filter_python') && !has('nvim')
+    let a:module.filter = function('s:filter_python')
+    let a:module.implementation = 'python'
+  elseif exists('*s:filter_python3') && !has('nvim')
+    let a:module.filter = function('s:filter_python3')
+    let a:module.implementation = 'python3'
+  else
+    let a:module.filter = function('s:filter_vim')
+    let a:module.implementation = 'vim'
+  endif
+endfunction
+
 function! s:pattern(input) abort
   if empty(a:input)
     return ''
   endif
-  let terms = map(split(a:input), 'lista#util#escape_pattern_vim(v:val)')
+  let terms = map(split(a:input), 's:String.escape_pattern(v:val)')
   return '\%(' . join(terms, '\|') . '\)'
-endfunction
-
-function! s:filter_vim(input, indices, candidates) abort dict
-  let patterns = split(a:input)
-  if &ignorecase
-    let patterns = map(patterns, 'lista#util#escape_pattern_vim(v:val)')
-    for pattern in patterns
-      call filter(
-            \ a:indices,
-            \ 'a:candidates[v:val] =~? pattern'
-            \)
-    endfor
-  else
-    for pattern in patterns
-      call filter(
-            \ a:indices,
-            \ 'stridx(a:candidates[v:val], pattern) != -1'
-            \)
-    endfor
-  endif
-  return a:indices
 endfunction
 
 if has('lua')
@@ -140,9 +117,24 @@ EOF
   endfunction
 endif
 
+function! s:filter_vim(input, indices, candidates) abort dict
+  let patterns = split(a:input)
+  if &ignorecase
+    let patterns = map(patterns, 's:String.escape_pattern(v:val)')
+    for pattern in patterns
+      call filter(
+            \ a:indices,
+            \ 'a:candidates[v:val] =~? pattern'
+            \)
+    endfor
+  else
+    for pattern in patterns
+      call filter(
+            \ a:indices,
+            \ 'stridx(a:candidates[v:val], pattern) != -1'
+            \)
+    endfor
+  endif
+  return a:indices
+endfunction
 
-call s:Config.define('lista#matcher#and', {
-      \ 'lua': has('lua'),
-      \ 'python': !has('nvim') && has('python'),
-      \ 'python3': !has('nvim') && has('python3'),
-      \})

@@ -1,14 +1,16 @@
+let s:matchers = {}
+
 " Public ---------------------------------------------------------------------
 function! lista#matcher#get(name, ...) abort
-  try
-    let matcher = call(
-          \ printf('lista#matcher#%s#define', a:name),
-          \ a:000,
-          \)
-  catch /^Vim\%((\a\+)\)\=:E117/
-    let matcher = lista#matcher#and#define()
-  endtry
-  return extend(matcher, s:matcher)
+  let name = has_key(s:matchers, a:name) ? a:name : 'and'
+  let matcher = copy(s:matchers[name])
+  let matcher.name = name
+  let matcher = extend(matcher, s:matcher)
+  return matcher
+endfunction
+
+function! lista#matcher#register(name, matcher) abort
+  let s:matchers[a:name] = a:matcher
 endfunction
 
 
@@ -30,3 +32,8 @@ function! s:matcher.regsearch(input) abort
     call setreg('/', self.pattern(a:input))
   endif
 endfunction
+
+
+" Registration ---------------------------------------------------------------
+call lista#matcher#register('and', vital#lista#import('Matcher.And'))
+call lista#matcher#register('fuzzy', vital#lista#import('Matcher.Fuzzy'))

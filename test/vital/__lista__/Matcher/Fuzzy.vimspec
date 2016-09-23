@@ -1,9 +1,6 @@
-Describe lista#matcher#fuzzy
+Describe Matcher.Fuzzy
   Before all
-    let Path = vital#vital#import('System.Filepath')
     let Guard = vital#vital#import('Vim.Guard')
-    let scope = themis#helper('scope')
-    let sfile = Path.realpath('autoload/lista/matcher/fuzzy.vim')
     let candidates = []
     let candidates += map(range(1, 1000), '''A'' . string(v:val)')
     let candidates += map(range(1, 1000), '''a'' . string(v:val)')
@@ -11,7 +8,7 @@ Describe lista#matcher#fuzzy
   End
 
   Before
-    let sf = scope.funcs(sfile)
+    let Matcher = vital#lista#import('Matcher.Fuzzy')
     let guard = Guard.store(['&ignorecase'])
   End
 
@@ -19,10 +16,10 @@ Describe lista#matcher#fuzzy
     call guard.restore()
   End
 
-  Describe s:filter_vim()
+  Describe s:filter()
     It filters candidates (ignorecase)
       set ignorecase
-      let available_indices = sf.filter_vim(
+      let available_indices = Matcher.filter(
             \ 'a105', indices, candidates
             \)
       let available_candidates = map(
@@ -37,7 +34,7 @@ Describe lista#matcher#fuzzy
 
     It filters candidates (noignorecase)
       set noignorecase
-      let available_indices = sf.filter_vim(
+      let available_indices = Matcher.filter(
             \ 'a105', indices, candidates
             \)
       let available_candidates = map(
@@ -54,7 +51,7 @@ Describe lista#matcher#fuzzy
     Describe s:filter_lua()
       It filters candidates (ignorecase)
         set ignorecase
-        let available_indices = sf.filter_lua(
+        let available_indices = Matcher.filter_lua(
               \ 'a105', indices, candidates
               \)
         let available_candidates = map(
@@ -69,7 +66,7 @@ Describe lista#matcher#fuzzy
 
       It filters candidates (noignorecase)
         set noignorecase
-        let available_indices = sf.filter_lua(
+        let available_indices = Matcher.filter_lua(
               \ 'a105', indices, candidates
               \)
         let available_candidates = map(
@@ -87,7 +84,7 @@ Describe lista#matcher#fuzzy
     Describe s:filter_python()
       It filters candidates (ignorecase)
         set ignorecase
-        let available_indices = sf.filter_python(
+        let available_indices = Matcher.filter_python(
               \ 'a105', indices, candidates
               \)
         let available_candidates = map(
@@ -102,7 +99,7 @@ Describe lista#matcher#fuzzy
 
       It filters candidates (noignorecase)
         set noignorecase
-        let available_indices = sf.filter_python(
+        let available_indices = Matcher.filter_python(
               \ 'a105', indices, candidates
               \)
         let available_candidates = map(
@@ -120,7 +117,7 @@ Describe lista#matcher#fuzzy
     Describe s:filter_python3()
       It filters candidates (ignorecase)
         set ignorecase
-        let available_indices = sf.filter_python3(
+        let available_indices = Matcher.filter_python3(
               \ 'a105', indices, candidates
               \)
         let available_candidates = map(
@@ -135,7 +132,7 @@ Describe lista#matcher#fuzzy
 
       It filters candidates (noignorecase)
         set noignorecase
-        let available_indices = sf.filter_python3(
+        let available_indices = Matcher.filter_python3(
               \ 'a105', indices, candidates
               \)
         let available_candidates = map(
@@ -148,5 +145,37 @@ Describe lista#matcher#fuzzy
       End
     End
   endif
+
+  Describe s:filter_vim()
+    It filters candidates (ignorecase)
+      set ignorecase
+      let available_indices = Matcher.filter_vim(
+            \ 'a105', indices, candidates
+            \)
+      let available_candidates = map(
+            \ copy(available_indices),
+            \ 'candidates[v:val]'
+            \)
+      Assert Equals(available_candidates, [
+            \ 'A105',
+            \ 'a105',
+            \])
+    End
+
+    It filters candidates (noignorecase)
+      set noignorecase
+      let available_indices = Matcher.filter_vim(
+            \ 'a105', indices, candidates
+            \)
+      let available_candidates = map(
+            \ copy(available_indices),
+            \ 'candidates[v:val]'
+            \)
+      Assert Equals(available_candidates, [
+            \ 'a105',
+            \])
+    End
+  End
 End
+
 

@@ -1,9 +1,6 @@
-Describe lista#matcher#and
+Describe Matcher.And
   Before all
-    let Path = vital#vital#import('System.Filepath')
     let Guard = vital#vital#import('Vim.Guard')
-    let scope = themis#helper('scope')
-    let sfile = Path.realpath('autoload/lista/matcher/and.vim')
     let candidates = []
     let candidates += map(range(1, 1000), '''A'' . string(v:val)')
     let candidates += map(range(1, 1000), '''a'' . string(v:val)')
@@ -11,7 +8,7 @@ Describe lista#matcher#and
   End
 
   Before
-    let sf = scope.funcs(sfile)
+    let Matcher = vital#lista#import('Matcher.And')
     let guard = Guard.store(['&ignorecase'])
   End
 
@@ -19,17 +16,16 @@ Describe lista#matcher#and
     call guard.restore()
   End
 
-  Describe s:filter_vim()
+  Describe .filter()
     It filters candidates (ignorecase)
       set ignorecase
-      let available_indices = sf.filter_vim(
+      let available_indices = Matcher.filter(
             \ 'a 10 5', indices, candidates
             \)
       let available_candidates = map(
             \ copy(available_indices),
             \ 'candidates[v:val]'
             \)
-      Assert Equals(available_indices, [104, 509, 1104, 1509])
       Assert Equals(available_candidates, [
             \ 'A105',
             \ 'A510',
@@ -40,14 +36,13 @@ Describe lista#matcher#and
 
     It filters candidates (noignorecase)
       set noignorecase
-      let available_indices = sf.filter_vim(
+      let available_indices = Matcher.filter(
             \ 'a 10 5', indices, candidates
             \)
       let available_candidates = map(
             \ copy(available_indices),
             \ 'candidates[v:val]'
             \)
-      Assert Equals(available_indices, [1104, 1509])
       Assert Equals(available_candidates, [
             \ 'a105',
             \ 'a510',
@@ -56,17 +51,16 @@ Describe lista#matcher#and
   End
 
   if has('lua')
-    Describe s:filter_lua()
+    Describe .filter_lua()
       It filters candidates (ignorecase)
         set ignorecase
-        let available_indices = sf.filter_lua(
+        let available_indices = Matcher.filter_lua(
               \ 'a 10 5', indices, candidates
               \)
         let available_candidates = map(
               \ copy(available_indices),
               \ 'candidates[v:val]'
               \)
-        Assert Equals(available_indices, [104, 509, 1104, 1509])
         Assert Equals(available_candidates, [
               \ 'A105',
               \ 'A510',
@@ -77,14 +71,13 @@ Describe lista#matcher#and
 
       It filters candidates (noignorecase)
         set noignorecase
-        let available_indices = sf.filter_lua(
+        let available_indices = Matcher.filter_lua(
               \ 'a 10 5', indices, candidates
               \)
         let available_candidates = map(
               \ copy(available_indices),
               \ 'candidates[v:val]'
               \)
-        Assert Equals(available_indices, [1104, 1509])
         Assert Equals(available_candidates, [
               \ 'a105',
               \ 'a510',
@@ -97,14 +90,13 @@ Describe lista#matcher#and
     Describe s:filter_python()
       It filters candidates (ignorecase)
         set ignorecase
-        let available_indices = sf.filter_python(
+        let available_indices = Matcher.filter_python(
               \ 'a 10 5', indices, candidates
               \)
         let available_candidates = map(
               \ copy(available_indices),
               \ 'candidates[v:val]'
               \)
-        Assert Equals(available_indices, [104, 509, 1104, 1509])
         Assert Equals(available_candidates, [
               \ 'A105',
               \ 'A510',
@@ -115,14 +107,13 @@ Describe lista#matcher#and
 
       It filters candidates (noignorecase)
         set noignorecase
-        let available_indices = sf.filter_python(
+        let available_indices = Matcher.filter_python(
               \ 'a 10 5', indices, candidates
               \)
         let available_candidates = map(
               \ copy(available_indices),
               \ 'candidates[v:val]'
               \)
-        Assert Equals(available_indices, [1104, 1509])
         Assert Equals(available_candidates, [
               \ 'a105',
               \ 'a510',
@@ -135,14 +126,13 @@ Describe lista#matcher#and
     Describe s:filter_python3()
       It filters candidates (ignorecase)
         set ignorecase
-        let available_indices = sf.filter_python3(
+        let available_indices = Matcher.filter_python3(
               \ 'a 10 5', indices, candidates
               \)
         let available_candidates = map(
               \ copy(available_indices),
               \ 'candidates[v:val]'
               \)
-        Assert Equals(available_indices, [104, 509, 1104, 1509])
         Assert Equals(available_candidates, [
               \ 'A105',
               \ 'A510',
@@ -153,14 +143,13 @@ Describe lista#matcher#and
 
       It filters candidates (noignorecase)
         set noignorecase
-        let available_indices = sf.filter_python3(
+        let available_indices = Matcher.filter_python3(
               \ 'a 10 5', indices, candidates
               \)
         let available_candidates = map(
               \ copy(available_indices),
               \ 'candidates[v:val]'
               \)
-        Assert Equals(available_indices, [1104, 1509])
         Assert Equals(available_candidates, [
               \ 'a105',
               \ 'a510',
@@ -168,4 +157,39 @@ Describe lista#matcher#and
       End
     End
   endif
+
+  Describe .filter_vim()
+    It filters candidates (ignorecase)
+      set ignorecase
+      let available_indices = Matcher.filter_vim(
+            \ 'a 10 5', indices, candidates
+            \)
+      let available_candidates = map(
+            \ copy(available_indices),
+            \ 'candidates[v:val]'
+            \)
+      Assert Equals(available_candidates, [
+            \ 'A105',
+            \ 'A510',
+            \ 'a105',
+            \ 'a510',
+            \])
+    End
+
+    It filters candidates (noignorecase)
+      set noignorecase
+      let available_indices = Matcher.filter_vim(
+            \ 'a 10 5', indices, candidates
+            \)
+      let available_candidates = map(
+            \ copy(available_indices),
+            \ 'candidates[v:val]'
+            \)
+      Assert Equals(available_candidates, [
+            \ 'a105',
+            \ 'a510',
+            \])
+    End
+  End
 End
+

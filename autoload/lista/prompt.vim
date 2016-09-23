@@ -1,10 +1,45 @@
+let s:String = vital#lista#import('Data.String')
 let s:Guard = vital#lista#import('Vim.Guard')
-let s:Config = vital#lista#import('App.Config')
 let s:Prompt = vital#lista#import('Vim.Prompt')
+let s:Validator = vital#lista#import('Data.Validator')
+
+" Public ---------------------------------------------------------------------
+let s:rule = s:Validator.new({
+      \ 'prefix': { 'type': type('') },
+      \ 'matcher': { 'type': type('') },
+      \ 'highlight': { 'type': type(0) },
+      \})
+function! lista#prompt#get(...) abort
+  let options = s:rule.validate(get(a:000, 0, {}))
+  if exists('b:lista_prompt')
+    let prompt = b:lista_prompt
+  else
+    let prompt = s:Prompt.new({
+          \ 'prefix': options.prefix,
+          \})
+    let prompt.previous = ''
+    let prompt.content = []
+    let b:lista_prompt = extend(prompt, s:prompt)
+  endif
+  let prompt.matcher = lista#matcher#get(options.matcher)
+  let prompt.highlight = options.highlight
+  " Update content if necessary
+  let content = getline(1, '$')
+  if prompt.content != content
+    let prompt.content = content
+    let prompt.previous = ''
+  endif
+  return prompt
+endfunction
+
 
 " Prompt ---------------------------------------------------------------------
 let s:parent = s:Prompt.new()
 let s:prompt = {}
+
+function! s:prompt.restore() abort
+  call s:assign_content(self.content)
+endfunction
 
 function! s:prompt.start(...) abort
   let guard = s:Guard.store(['&l:statusline'])
@@ -31,7 +66,7 @@ endfunction
 function! s:prompt.callback() abort
   let previous = self.previous
   let self.previous = self.input
-  if empty(previous) || self.input !~# '^' . lista#util#escape_pattern_vim(previous)
+  if empty(previous) || self.input !~# '^' . s:String.escape_pattern(previous)
     let self.indices = self.matcher.filter(
           \ self.input,
           \ range(len(self.content)),
@@ -48,7 +83,7 @@ function! s:prompt.callback() abort
         \ copy(self.indices),
         \ 'self.content[v:val]'
         \)
-  call lista#util#assign_content(content)
+  call s:assign_content(content)
   call self.redraw_statusline()
   if self.highlight
     call self.matcher.highlight(self.input)
@@ -67,36 +102,18 @@ function! s:prompt.redraw_statusline() abort
 endfunction
 
 
-" Public ---------------------------------------------------------------------
-" options:
-"   prefix:     String
-"   matcher:    String
-"   highlight:  0/1
-function! lista#prompt#get(options) abort
-  if exists('b:lista_prompt')
-    let prompt = b:lista_prompt
-  else
-    let prompt = s:Prompt.new({
-          \ 'prefix': a:options.prefix,
-          \})
-    let prompt.previous = ''
-    let prompt.content = []
-    let b:lista_prompt = extend(prompt, s:prompt)
-  endif
-  let prompt.matcher = lista#matcher#get(a:options.matcher)
-  let prompt.highlight = a:options.highlight
-  " Update content if necessary
-  let content = getline(1, '$')
-  if prompt.content != content
-    let prompt.content = content
-    let prompt.previous = ''
-  endif
-  return prompt
+" Private --------------------------------------------------------------------
+function! s:assign_content(content) abort
+  let gurad = s:Guard.store([
+        \ '&modifiable',
+        \ '&modified',
+        \ 'winview',
+        \])
+  try
+    set modifiable
+    silent keepjumps %delete _
+    call setline(1, a:content)
+  finally
+    call gurad.restore()
+  endtry
 endfunction
-
-
-call s:Config.define('lista#prompt', {
-      \ 'prefix': '# ',
-      \ 'matcher': 'or',
-      \ 'disable_highlight': 0,
-      \})

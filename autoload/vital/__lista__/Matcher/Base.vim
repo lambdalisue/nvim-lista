@@ -1,51 +1,16 @@
-let s:Config = vital#lista#import('App.Config')
-let s:matcher = { 'name': 'fuzzy' }
-
-
-" Public ---------------------------------------------------------------------
-function! lista#matcher#fuzzy#define(...) abort
-  let matcher = copy(s:matcher)
-  let matcher.pattern = function('s:pattern')
-  if g:lista#matcher#fuzzy#lua
-    let matcher.filter = function('s:filter_lua')
-    let matcher.implementation = 'lua'
-  elseif g:lista#matcher#fuzzy#python
-    let matcher.filter = function('s:filter_python')
-    let matcher.implementation = 'python'
-  elseif g:lista#matcher#fuzzy#python3
-    let matcher.filter = function('s:filter_python3')
-    let matcher.implementation = 'python3'
-  else
-    let matcher.filter = function('s:filter_vim')
-    let matcher.implementation = 'vim'
-  endif
-  return matcher
+function! s:_vital_loaded(V) abort
+  let s:String = a:V.import('Data.String')
 endfunction
 
-
-" Private --------------------------------------------------------------------
-" REF:
-" https://github.com/Shougo/unite.vim/blob/master/autoload/unite/filters/matcher_fuzzy.vim#L40
-function! s:pattern(input) abort
-  if empty(a:input)
-    return ''
-  endif
-  let chars = map(split(a:input, '\zs'), 'lista#util#escape_pattern_vim(v:val)')
-  let chars = map(chars, 'printf(''%s[^%s]\{-}'', v:val, v:val)')
-  return join(chars, '')
-endfunction
-
-function! s:filter_vim(input, indices, candidates) abort
-  let pattern = s:pattern(a:input)
-  return filter(a:indices, 'a:candidates[v:val] =~ pattern')
+function! s:_vital_depends() abort
+  return ['Data.String']
 endfunction
 
 if has('lua')
   " FORKED FROM:
   " https://github.com/Shougo/unite.vim/blob/master/autoload/unite/filters.vim#L105
   function! s:filter_lua(input, indices, candidates) abort
-    let pattern = lista#util#escape_pattern_lua(a:input)
-    let pattern = substitute(pattern, '[[:alnum:]_/-]\ze.', '\0.-', 'g')
+    let pattern = a:input
     lua << EOF
 do
   local indices = vim.eval('a:indices')
@@ -73,9 +38,7 @@ endif
 
 if has('python')
   function! s:filter_python(input, indices, candidates) abort
-    let chars = map(split(a:input, '\zs'), 'lista#util#escape_pattern_python(v:val)')
-    let chars = map(chars, 'printf(''%s[^%s]*?'', v:val, v:val)')
-    let pattern = join(chars, '')
+    let pattern = a:input
     python << EOF
 import vim
 def _temporary_scope():
@@ -104,9 +67,7 @@ endif
 
 if has('python3')
   function! s:filter_python3(input, indices, candidates) abort
-    let chars = map(split(a:input, '\zs'), 'lista#util#escape_pattern_python(v:val)')
-    let chars = map(chars, 'printf(''%s[^%s]*?'', v:val, v:val)')
-    let pattern = join(chars, '')
+    let pattern = a:input
     python3 << EOF
 import vim
 def _temporary_scope():
@@ -133,9 +94,27 @@ EOF
   endfunction
 endif
 
+function! s:filter_vim(input, indices, candidates) abort
+  let pattern = a:input
+  return filter(a:indices, 'a:candidates[v:val] =~ pattern')
+endfunction
 
-call s:Config.define('lista#matcher#fuzzy', {
-      \ 'lua': has('lua'),
-      \ 'python': !has('nvim') && has('python'),
-      \ 'python3': !has('nvim') && has('python3'),
-      \})
+" COPIED FROM:
+" https://github.com/Shougo/unite.vim/blob/master/autoload/unite/filters.vim#L149 
+function! s:escape_pattern_lua(text) abort
+  return substitute(substitute(substitute(substitute(a:text,
+        \ '\\ ', ' ', 'g'),
+        \ '[%\[\]().+?^$-]', '%\0', 'g'),
+        \ '\*\@<!\*\*\@!', '.*', 'g'),
+        \ '\*\*\+', '.*', 'g')
+endfunction
+
+function! s:escape_pattern_python(text) abort
+  return escape(a:text, '.^$*+?{}\[]|()')
+endfunction
+
+function! s:escape_pattern_vim(text) abort
+  return s:String.escape_pattern(a:text)
+endfunction
+
+
