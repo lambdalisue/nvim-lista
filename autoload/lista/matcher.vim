@@ -1,7 +1,7 @@
 let s:matchers = {}
 
 " Public ---------------------------------------------------------------------
-function! lista#matcher#get(name, ...) abort
+function! lista#matcher#get(name) abort
   let name = has_key(s:matchers, a:name) ? a:name : 'and'
   let matcher = copy(s:matchers[name])
   let matcher.name = name
@@ -31,6 +31,12 @@ function! s:matcher.regsearch(input) abort
   if !empty(a:input)
     call setreg('/', self.pattern(a:input))
   endif
+endfunction
+
+function! s:matcher.next() abort
+  let names = keys(s:matchers)
+  let index = index(names, self.name)
+  return lista#matcher#get(names[index-1])
 endfunction
 
 

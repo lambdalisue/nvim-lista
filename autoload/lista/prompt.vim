@@ -60,6 +60,9 @@ function! s:prompt.keydown(key, char) abort
   elseif a:char ==# "\<C-P>"
     call setpos('.', [0, line('.')-1, col('.'), 0])
     return 1
+  elseif a:char ==# "\<C-^>"
+    call self.switch_matcher()
+    return 1
   endif
 endfunction
 
@@ -93,12 +96,21 @@ endfunction
 function! s:prompt.redraw_statusline() abort
   redrawstatus
   let &l:statusline = printf(
-        \ "%%f %%= %s: %s/%s (%s)",
+        \ "%%f %%= Matcher: %s (C-^ to switch) | %s/%s%s",
         \ get(self.matcher, 'name', 'unknown'),
         \ len(self.indices),
         \ len(self.content),
-        \ get(self.matcher, 'implementation', '?'),
+        \ &verbose ? printf(
+        \   ' [Implementation: %s]',
+        \   get(self.matcher, 'implementation', '?'),
+        \ ) : '',
         \)
+endfunction
+
+function! s:prompt.switch_matcher() abort
+  call self.matcher.highlight('')
+  let self.matcher = self.matcher.next()
+  let self.previous = ''
 endfunction
 
 
