@@ -33,6 +33,7 @@ function! lista#start(default, ...) abort
     call prompt.restore()
     call guard.restore()
     call setpos('.', cursor)
+    normal! zv
   endtry
 endfunction
 
