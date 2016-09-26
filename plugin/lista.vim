@@ -4,11 +4,6 @@ endif
 let g:loaded_lista = 1
 
 command! -nargs=* -bang -range
-      \ -complete=customlist,lista#complete
+      \ -complete=customlist,lista#router#complete
       \ Lista
-      \ call lista#command(<q-bang>, [<line1>, <line2>], <q-args>)
-
-command! -nargs=* -bang -range
-      \ -complete=customlist,lista#complete
-      \ ListaCursorWord
-      \ call lista#command(<q-bang>, [<line1>, <line2>], <q-args>, 1)
+      \ call lista#router#command(<q-bang>, [<line1>, <line2>], <q-args>)
