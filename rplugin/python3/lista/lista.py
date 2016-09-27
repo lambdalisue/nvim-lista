@@ -17,6 +17,7 @@ class Lista(Prompt):
 
     def start(self, default=None):
         with self.guard:
+            self.nvim.command('silent normal! zO')
             self.buffer = self.nvim.current.buffer
             self.window = self.nvim.current.window
             self.content = self.buffer[:]
@@ -30,7 +31,7 @@ class Lista(Prompt):
                 self.indices[cursor[0] - 1] + 1,
                 cursor[1]
             ])
-            self.nvim.command('normal! zv')
+            self.nvim.command('silent normal! zv')
 
     def switch_matcher(self):
         if isinstance(self.matcher, AllMatcher):
