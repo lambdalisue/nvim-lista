@@ -32,7 +32,7 @@ class Guard:
         self.content = self.buffer[:]
 
     def restore(self):
-        assign_content(self.buffer, self.content)
+        assign_content(self.nvim, self.buffer, self.content)
         if os.path.isfile(self.undofile):
             self.nvim.command('silent rundo %s' % self.undofile)
         self.nvim.call('winrestview', self.view)
@@ -49,8 +49,11 @@ class Guard:
         self.restore()
 
 
-def assign_content(buf, content):
-    modifiable = buf.options['modifiable']
-    buf.options['modifiable'] = True
-    buf[:] = content
-    buf.options['modifiable'] = modifiable
+def assign_content(nvim, buffer, content):
+    eventignore = nvim.options['eventignore']
+    modifiable = buffer.options['modifiable']
+    nvim.options['eventignore'] = 'TextChanged,Syntax,CursorMoved,CursorHold'
+    buffer.options['modifiable'] = True
+    buffer[:] = content
+    buffer.options['modifiable'] = modifiable
+    nvim.options['eventignore'] = eventignore

@@ -37,7 +37,8 @@ function! lista#vim#start() abort
   python3 << EOF
 def _temporary_scope():
     from lista.lista import Lista
-    Lista(vim).start()
+    from lista.compat import Nvim
+    Lista(Nvim(vim)).start()
 _temporary_scope()
 del _temporary_scope
 EOF

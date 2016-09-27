@@ -81,7 +81,7 @@ class Lista(Prompt):
             self.content,
         )
 
-        assign_content(self.buffer, list(map(
+        assign_content(self.nvim, self.buffer, list(map(
             lambda x: self.content[x],
             self.indices
         )))
