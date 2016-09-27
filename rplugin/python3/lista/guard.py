@@ -1,4 +1,5 @@
 import os
+from . import operator
 
 
 class Guard:
@@ -26,16 +27,16 @@ class Guard:
             ]
         }
 
-        self.view = self.nvim.call('winsaveview')
-        self.undofile = self.nvim.call('tempname')
+        self.view = operator.call(self.nvim, 'winsaveview')
+        self.undofile = operator.call(self.nvim, 'tempname')
         self.nvim.command('silent wundo! %s' % self.undofile)
         self.content = self.buffer[:]
 
     def restore(self):
-        assign_content(self.buffer, self.content)
+        assign_content(self.nvim, self.buffer, self.content)
         if os.path.isfile(self.undofile):
             self.nvim.command('silent rundo %s' % self.undofile)
-        self.nvim.call('winrestview', self.view)
+        operator.call(self.nvim, 'winrestview', self.view)
         for key, value in self.window_options.items():
             self.window.options[key] = value
         for key, value in self.buffer_options.items():
@@ -49,8 +50,14 @@ class Guard:
         self.restore()
 
 
-def assign_content(buf, content):
+def assign_content(nvim, buf, content):
+    eventignore = nvim.options['eventignore']
     modifiable = buf.options['modifiable']
+    if isinstance(nvim.options['eventignore'], bytes):
+        nvim.options['eventignore'] += b'TextChanged'
+    else:
+        nvim.options['eventignore'] += 'TextChanged'
     buf.options['modifiable'] = True
     buf[:] = content
     buf.options['modifiable'] = modifiable
+    nvim.options['eventignore'] = eventignore
