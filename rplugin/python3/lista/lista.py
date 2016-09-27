@@ -1,7 +1,5 @@
-from . import operator
 from .guard import Guard, assign_content
-from .prompt import Prompt
-from .prompt.key import Keys
+from .prompt import Prompt, Keys
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 
@@ -28,7 +26,7 @@ class Lista(Prompt):
             cursor = self.window.cursor
         # Jump to the cursor
         if cursor[0] - 1 < len(self.indices):
-            operator.call(self.nvim, 'cursor', [
+            self.nvim.call('cursor', [
                 self.indices[cursor[0] - 1] + 1,
                 cursor[1]
             ])
@@ -61,8 +59,7 @@ class Lista(Prompt):
         self.matcher.highlight('')
         self.buffer.options['modified'] = False
         if result:
-            operator.call(
-                self.nvim,
+            self.nvim.call(
                 'setreg',
                 '/',
                 self.matcher.highlight_pattern(result)
@@ -97,10 +94,10 @@ class Lista(Prompt):
 
         if key in (Keys.C_N, Keys.PageDown):
             line, col = self.window.cursor
-            operator.call(self.nvim, 'cursor', [line + 1, col])
+            self.nvim.call('cursor', [line + 1, col])
         elif key in (Keys.C_P, Keys.PageUp):
             line, col = self.window.cursor
-            operator.call(self.nvim, 'cursor', [line - 1, col])
+            self.nvim.call('cursor', [line - 1, col])
         elif key in (Keys.C_CARET,):
             self.switch_matcher()
         else:

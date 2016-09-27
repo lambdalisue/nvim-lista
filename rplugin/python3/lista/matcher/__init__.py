@@ -1,5 +1,3 @@
-from .. import operator
-
 ESCAPE_VIM_PATTERN_TABLE = str.maketrans({
     '^': '\\^',
     '$': '\\$',
@@ -25,16 +23,16 @@ class AbstractMatcher:
 
     def highlight(self, query):
         if self.match_id:
-            operator.call(self.nvim, 'matchdelete', self.match_id)
+            self.nvim.call('matchdelete', self.match_id)
             self.match_id = None
         if not query:
             return
         pattern = self.highlight_pattern(query)
-        self.match_id = operator.call(
-            self.nvim,
+        self.match_id = self.nvim.call(
             'matchadd',
             'Title',
-            pattern, 0,
+            ('\c' if self.nvim.options['ignorecase'] else '\C') + pattern,
+            0,
         )
 
     def filter(self, query, indices, candidates):
