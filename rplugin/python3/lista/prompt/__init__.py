@@ -1,3 +1,4 @@
+from .. import operator
 from .key import Keys
 from .caret import Caret
 
@@ -11,7 +12,7 @@ class Prompt:
         self.input = ''
 
     def start(self, default=None):
-        self.nvim.call('inputsave')
+        operator.call(self.nvim, 'inputsave')
         if default:
             self.input = default
         self.caret.index = self.caret.max
@@ -23,12 +24,12 @@ class Prompt:
             self.redraw_promptline()
             self.redraw_statusline()
 
-            key = self.nvim.call('getchar')
+            key = operator.call(self.nvim, 'getchar')
             if isinstance(key, str) and key.startswith("\udc80"):
                 key = key[1:]
                 char = ''
             else:
-                char = self.nvim.call('nr2char', key)
+                char = operator.call(self.nvim, 'nr2char', key)
 
             if key == Keys.CR or key == Keys.ESC:
                 break
@@ -37,8 +38,8 @@ class Prompt:
 
         self.nvim.command('redraw | echo')
         if self.input:
-            self.nvim.call('histadd', 'input', self.input)
-        self.nvim.call('inputrestore')
+            operator.call(self.nvim, 'histadd', 'input', self.input)
+        operator.call(self.nvim, 'inputrestore')
         result = None if key == Keys.ESC else self.input
         self.on_term(result)
         return result

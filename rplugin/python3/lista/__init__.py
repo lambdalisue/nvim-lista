@@ -12,6 +12,5 @@ try:
             lista = Lista(self.nvim)
             lista.start()
             return
-
 except ImportError:
-    import vim
+    pass
