@@ -1,4 +1,8 @@
 import curses.ascii
+ESCAPE_ECHO = str.maketrans({
+    '"': '\\"',
+    '\\': '\\\\',
+})
 
 
 class Keys:
@@ -28,6 +32,7 @@ class Keys:
     PageUp = "kP"
     PageDown = "kN"
 
+    Delete = "kD"
     Backspace = "kb"
 
 
@@ -71,7 +76,7 @@ class Caret:
 
     @property
     def rhs(self):
-        if self.index == self.max:
+        if self.index >= self.max - 1:
             return ''
         return self.prompt.input[self.index+1:]
 
@@ -150,13 +155,13 @@ class Prompt:
         self.nvim.command(' | '.join([
             'redraw',
             'echohl Question',
-            'echon "%s"' % self.prefix,
+            'echon "%s"' % self.prefix.translate(ESCAPE_ECHO),
             'echohl None',
-            'echon "%s"' % self.caret.lhs,
+            'echon "%s"' % self.caret.lhs.translate(ESCAPE_ECHO),
             'echohl Cursor',
-            'echon "%s"' % self.caret.char,
+            'echon "%s"' % self.caret.char.translate(ESCAPE_ECHO),
             'echohl None',
-            'echon "%s"' % self.caret.rhs,
+            'echon "%s"' % self.caret.rhs.translate(ESCAPE_ECHO),
         ]))
 
     def redraw_statusline(self):
@@ -176,7 +181,7 @@ class Prompt:
     def on_keypress(self, key):
         if key in (Keys.C_H, Keys.BS, Keys.Backspace):
             self.caret.backspace()
-        elif key in (Keys.C_D, Keys.DEL):
+        elif key in (Keys.C_D, Keys.DEL, Keys.Delete):
             self.caret.delete()
         elif key in (Keys.C_F, Keys.Left):
             self.caret.index -= 1
@@ -186,7 +191,11 @@ class Prompt:
             self.caret.index = self.caret.min
         elif key in (Keys.C_E, Keys.End):
             self.caret.index = self.caret.max
+        elif key in (Keys.C_R,):
+            self.nvim.command('echon \'"\'')
+            reg = self.nvim.call('nr2char', self.nvim.call('getchar'))
+            val = self.nvim.call('getreg', reg)
+            self.caret.insert(val.replace("\n", ''))
         else:
             return False
         return True
-
