@@ -1,7 +1,7 @@
 lista
 ==============================================================================
-[![Travis CI](https://img.shields.io/travis/lambdalisue/vim-lista/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/vim-lista)
-[![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/vim-lista/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/vim-lista/branch/master)
+[![Travis CI](https://img.shields.io/travis/lambdalisue/lista.nvim/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/lista.nvim)
+[![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/lista.nvim/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/lista.nvim/branch/master)
 ![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg?style=flat-square)
 ![Support Neovim 0.1.6 or above](https://img.shields.io/badge/support-Neovim%200.1.6%20or%20above-green.svg?style=flat-square)
 ![Support Vim 8.0 or above](https://img.shields.io/badge/support-Vim%208.0.0%20or%20above-yellowgreen.svg?style=flat-square)
@@ -19,7 +19,7 @@ Install
 -------------------------------------------------------------------------------
 
 ```vim
-Plug 'lambdalisue/vim-lista'
+Plug 'lambdalisue/lista.nvim'
 ```
 
 Install [lambdalisue/vim-rplugin](https://github.com/lambdalisue/vim-rplugin) as well if you want to make it available on Vim 8.0.
