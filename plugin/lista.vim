@@ -3,7 +3,8 @@ if exists('g:loaded_lista')
 endif
 let g:loaded_lista = 1
 
-command! -nargs=* -bang -range
-      \ -complete=customlist,lista#router#complete
-      \ Lista
-      \ call lista#router#command(<q-bang>, [<line1>, <line2>], <q-args>)
+function! s:command(qargs) abort
+  return lista#start(a:qargs)
+endfunction
+command! -nargs=? Lista  call s:command(<q-args>)
+command! ListaCursorWord call s:command(expand('<cword>'))

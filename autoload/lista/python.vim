@@ -29,7 +29,7 @@ EOC
   endtry
 endfunction
 
-function! lista#python#start() abort
+function! lista#python#start(default) abort
   if !lista#python#init()
     echoerr 'vim-lista is disabled.'
     return
@@ -41,7 +41,7 @@ def _temporary_scope():
     # NOTE:
     # vim.options['encoding'] returns bytes so use vim.eval('&encoding')
     ENCODING = vim.eval('&encoding')
-    class Decorator:
+    class Proxy:
         def __init__(self, component):
             self.component = component
             self.__class__ = self.__class__.extend(component.__class__)
@@ -50,7 +50,7 @@ def _temporary_scope():
             return self.__class__.decorate(value)
         @classmethod
         def extend(cls, component_cls):
-          decorator = type('DecoratorExtended', (cls,), {})
+          decorator = type('ProxyExtended', (cls,), {})
           def bind(attr):
             if hasattr(decorator, attr) or not hasattr(component_cls, attr):
               return
@@ -63,13 +63,13 @@ def _temporary_scope():
         @classmethod
         def decorate(cls, component):
             if component in (vim.buffers, vim.windows, vim.tabpages, vim.current):
-                return Decorator(component)
+                return Proxy(component)
             elif isinstance(component, (vim.Buffer, vim.Window, vim.TabPage)):
-                return Decorator(component)
+                return Proxy(component)
             elif isinstance(component, (vim.List, vim.Dictionary, vim.Options)):
-                return ContainerDecorator(component)
+                return ContainerProxy(component)
             return component
-    class ContainerDecorator(Decorator):
+    class ContainerProxy(Proxy):
         def __getitem__(self, key):
             value = self.component[key]
             if isinstance(value, bytes):
@@ -79,7 +79,7 @@ def _temporary_scope():
             if isinstance(value, str):
                 value = value.encode(ENCODING)
             self.component[key] = value
-    class Nvim(Decorator):
+    class Nvim(Proxy):
         def call(self, name, *args):
             result = self.Function(name)(*args)
             if isinstance(result, bytes):
@@ -89,8 +89,12 @@ def _temporary_scope():
                     result = result.decode(ENCODING)
             return result
     # -------------------------------------------------------------------------
-    from lista.lista import Lista
-    Lista(Nvim(vim)).start()
+    from lista.core import Lista
+    from lista.context import Context
+    nvim = Nvim(vim)
+    context = Context(nvim)
+    lista = Lista(nvim, context)
+    lista.start(vim.eval('a:default'))
 _temporary_scope()
 del _temporary_scope
 EOC

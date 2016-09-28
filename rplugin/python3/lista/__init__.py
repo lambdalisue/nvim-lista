@@ -8,9 +8,11 @@ try:
 
         @neovim.function('_lista_start', sync=True)
         def start(self, args):
-            from .lista import Lista
-            lista = Lista(self.nvim)
-            lista.start()
+            from .core import Lista
+            from .context import Context
+            context = Context(self.nvim)
+            lista = Lista(self.nvim, context)
+            lista.start(args[0])
             return
 except ImportError:
     pass
