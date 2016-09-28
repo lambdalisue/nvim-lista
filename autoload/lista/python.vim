@@ -44,9 +44,9 @@ def _temporary_scope():
     def reform_bytes(value):
         if isinstance(value, bytes):
             if value.startswith(b"\x80"):
-                return "\udc80" + value[1:].decode(ENCODING)
+                return "\udc80" + value[1:].decode(ENCODING, 'ignore')
             else:
-                return value.decode(ENCODING)
+                return value.decode(ENCODING, 'ignore')
         elif isinstance(value, (dict, vim.Dictionary, vim.Options)):
             return {reform_bytes(k): reform_bytes(v)
                     for k, v in value.items()}
