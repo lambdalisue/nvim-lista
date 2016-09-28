@@ -10,7 +10,7 @@ lista
 
 Introductions
 -------------------------------------------------------------------------------
-[![asciicast](https://asciinema.org/a/86747.png)](https://asciinema.org/a/86747)
+[![asciicast](https://asciinema.org/a/87432.png)](https://asciinema.org/a/87432)
 
 **Note: This plugin is experimental**.
 
