@@ -68,6 +68,20 @@ nnoremap # :<C-u>Lista<CR>
 nnoremap g# :<C-u>ListaCursorWord<CR>
 ```
 
+If you prefer to use `<C-n>/<C-p>` to select candidate like denite.nvim, use
+
+```vim
+let g:lista#custom_mapping = [
+      \ ["\<C-D>", "\<Del>"],
+      \ ["\<C-A>", "\<Home>"],
+      \ ["\<C-E>", "\<End>"],
+      \ ["\<C-F>", "\<Left>"],
+      \ ["\<C-B>", "\<Right>"],
+      \ ["\<C-P>", "\<C-T>", 1],  " 1 means 'noremap'
+      \ ["\<C-N>", "\<C-G>", 1],
+      \]
+```
+
 Note that multi-byte characters are not supported only in GVim.
 
 
