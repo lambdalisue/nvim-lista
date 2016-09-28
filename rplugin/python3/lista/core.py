@@ -76,6 +76,9 @@ class Lista(Prompt):
             self.context.selected_indices = list(
                 range(len(self.context.buffer_content))
             )
+            self.nvim.call('cursor', [1, self.window.cursor[1]])
+        elif previous != self.text:
+            self.nvim.call('cursor', [1, self.window.cursor[1]])
 
         self.matcher.highlight(self.text)
         self.matcher.filter(
