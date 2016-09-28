@@ -4,7 +4,7 @@ if has('nvim')
   endfunction
 else
   function! lista#start(default) abort
-    return lista#python#start(a:default)
+    return lista#rplugin#start(a:default)
   endfunction
 endif
 
