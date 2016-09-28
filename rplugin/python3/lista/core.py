@@ -50,11 +50,11 @@ class Lista(Prompt):
         self.buffer.options['modified'] = False
         self.buffer.options['modifiable'] = False
         self.window.options['spell'] = False
+        self.window.options['foldenable'] = False
         self.window.options['colorcolumn'] = ''
         self.window.options['cursorline'] = True
         self.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
-        self.nvim.command('silent! normal! zR')
         return super().on_init(default)
 
     def on_redraw(self):

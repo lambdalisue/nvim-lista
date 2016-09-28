@@ -30,6 +30,7 @@ class Context:
         self.window_options = {
             k: window.options[k] for k in [
                 'spell',
+                'foldenable',
                 'statusline',
                 'colorcolumn',
                 'cursorline',
