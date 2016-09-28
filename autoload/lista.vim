@@ -4,6 +4,6 @@ if has('nvim')
   endfunction
 else
   function! lista#start() abort
-    return lista#vim#start()
+    return lista#python#start()
   endfunction
 endif
