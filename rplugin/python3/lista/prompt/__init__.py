@@ -28,7 +28,7 @@ class Prompt:
 
     @text.setter
     def text(self, value):
-        self.context.text = value
+        self.context.text = value.replace("\n", " ")
         self.caret.locus = len(value)
 
     def start(self, default=None):

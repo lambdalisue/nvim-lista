@@ -7,7 +7,7 @@ class Operator:
         self.mode = 'insert'
 
     def _insert_text(self, text):
-        self.prompt.context.text = ''.join([
+        self.prompt.text = ''.join([
             self.prompt.caret.get_backward_text(),
             text,
             self.prompt.caret.get_selected_text(),
@@ -16,7 +16,7 @@ class Operator:
         self.prompt.caret.locus += len(text)
 
     def _replace_text(self, text):
-        self.prompt.context.text = ''.join([
+        self.prompt.text = ''.join([
             self.prompt.caret.get_backward_text(),
             text,
             self.prompt.caret.get_forward_text(),
