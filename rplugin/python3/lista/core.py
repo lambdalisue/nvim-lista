@@ -54,7 +54,7 @@ class Lista(Prompt):
         self.window.options['cursorline'] = True
         self.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
-        self.nvim.command('silent! normal! zO')
+        self.nvim.command('silent! normal! zR')
         return super().on_init(default)
 
     def on_redraw(self):
