@@ -70,6 +70,14 @@ nnoremap g# :<C-u>ListaCursorWord<CR>
 
 Note that multi-byte characters are not supported only in GVim.
 
+
+ToDo
+-------------------------------------------------------------------------------
+
+- [ ] Multikeys mapping (e.g. `<C-k>ab`)
+- [ ] Digraphs (`<C-k> <char1> <char2>`)
+- [ ] Translate `cmap`
+
 See also
 -------------------------------------------------------------------------------
 This plugin has partially forked from or inspired by the following plugins.

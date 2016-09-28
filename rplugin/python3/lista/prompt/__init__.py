@@ -85,6 +85,7 @@ class Prompt:
         elif key in (Key('DEL'), Key('Delete')):
             return self.operator.delete_char_under_caret(key)
         elif key == Key('^K'):
+            # TODO: <C-K> is used for digraph so should use different key
             return self.operator.delete_text_after_caret(key)
         elif key == Key('Left'):
             return self.operator.move_caret_to_left(key)
