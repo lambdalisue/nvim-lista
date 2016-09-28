@@ -41,6 +41,19 @@ def _temporary_scope():
     # NOTE:
     # vim.options['encoding'] returns bytes so use vim.eval('&encoding')
     ENCODING = vim.eval('&encoding')
+    def reform_bytes(value):
+        if isinstance(value, bytes):
+            if value.startswith(b"\x80"):
+                return "\udc80" + value[1:].decode(ENCODING)
+            else:
+                return value.decode(ENCODING)
+        elif isinstance(value, (dict, vim.Dictionary, vim.Options)):
+            return {reform_bytes(k): reform_bytes(v)
+                    for k, v in value.items()}
+        elif isinstance(value, (list, tuple, vim.List)):
+            return list(map(reform_bytes, value))
+        else:
+            return value
     class Proxy:
         def __init__(self, component):
             self.component = component
@@ -71,23 +84,14 @@ def _temporary_scope():
             return component
     class ContainerProxy(Proxy):
         def __getitem__(self, key):
-            value = self.component[key]
-            if isinstance(value, bytes):
-                value = value.decode(ENCODING)
-            return value
+            return reform_bytes(self.component[key])
         def __setitem__(self, key, value):
             if isinstance(value, str):
                 value = value.encode(ENCODING)
             self.component[key] = value
     class Nvim(Proxy):
         def call(self, name, *args):
-            result = self.Function(name)(*args)
-            if isinstance(result, bytes):
-                if result.startswith(b"\x80"):
-                    result = "\udc80" + result[1:].decode(ENCODING)
-                else:
-                    result = result.decode(ENCODING)
-            return result
+            return reform_bytes(self.Function(name)(*args))
     # -------------------------------------------------------------------------
     from lista.core import Lista
     from lista.context import Context
