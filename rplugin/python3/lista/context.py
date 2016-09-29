@@ -1,5 +1,9 @@
-class Context:
+from prompt.prompt.context import Context as BaseContext
+
+
+class Context(BaseContext):
     __slots__ = [
+        'nvim',
         'text',
         'caret_locus',
         'buffer_number',
@@ -13,8 +17,7 @@ class Context:
     ]
 
     def __init__(self, nvim):
-        self.text = ''
-        self.caret_locus = 0
+        super().__init__(nvim)
         buffer = nvim.current.buffer
         self.buffer_number = buffer.number
         self.buffer_content = buffer[:]
@@ -57,14 +60,3 @@ class Context:
             window.options[k] = v
         nvim.call('winrestview', self.viewinfo)
         nvim.command('silent! rundo %s' % self.undofile)
-
-    def to_dict(self):
-        return {k: getattr(self, k) for k in self.__slots__}
-
-    @classmethod
-    def from_dict(cls, d):
-        context = cls.__new__()
-        for k, v in d.items():
-            if k in cls.__slots__:
-                setattr(context, k, v)
-        return context

@@ -7,15 +7,4 @@ else
     return lista#rplugin#start(a:default)
   endfunction
 endif
-
-
-if !exists('g:lista#custom_mapping')
-  " Define Emacs-like prompt mapping
-  let g:lista#custom_mapping = [
-        \ ["\<C-D>", "\<Del>"],
-        \ ["\<C-A>", "\<Home>"],
-        \ ["\<C-E>", "\<End>"],
-        \ ["\<C-F>", "\<Left>"],
-        \ ["\<C-B>", "\<Right>"],
-        \]
-endif
+call prompt#init()

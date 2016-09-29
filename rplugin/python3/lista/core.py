@@ -1,4 +1,5 @@
-from .prompt import Prompt, Key
+from prompt.prompt import Prompt
+from prompt.prompt.key import Key
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 
@@ -15,7 +16,10 @@ class Lista(Prompt):
     def __init__(self, nvim, context):
         self.matcher = AllMatcher(nvim)
         self._previous = ''
-        super().__init__(nvim, context)
+        super().__init__(
+            nvim, context,
+            use_extra_custom_mappings='lista#custom_mappings'
+        )
 
     def assign_content(self, content):
         viewinfo = self.nvim.call('winsaveview')
@@ -93,13 +97,13 @@ class Lista(Prompt):
         return super().on_update(status)
 
     def on_keypress(self, key):
-        if key in (Key('^G'), Key('PageDown')):
+        if key in (Key(self.nvim, '<C-G>'), Key(self.nvim, '<PageDown>')):
             line, col = self.window.cursor
             self.nvim.call('cursor', [line + 1, col])
-        elif key in (Key('^T'), Key('PageUp')):
+        elif key in (Key(self.nvim, '<C-T>'), Key(self.nvim, '<PageUp>')):
             line, col = self.window.cursor
             self.nvim.call('cursor', [line - 1, col])
-        elif key == Key('^^'):
+        elif key == Key(self.nvim, '<C-^>'):
             self.switch_matcher()
         else:
             return super().on_keypress(key)
@@ -121,5 +125,5 @@ class Lista(Prompt):
                 index = self.context.selected_indices[line-1]
                 self.nvim.call('cursor', [index + 1, 0])
         self.nvim.command('silent doautocmd Syntax')
-        self.nvim.command('silent! normal! zv')
+        self.nvim.command('silent! normal! zvzz')
         return super().on_term(status, result)

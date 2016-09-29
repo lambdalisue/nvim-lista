@@ -1,20 +1,8 @@
 let s:rep = expand('<sfile>:p:h:h:h')
 
 
-function! s:init() abort
-  if exists('s:result')
-    return s:result
-  endif
-  let s:result = rplugin#init(s:rep, {
-        \ 'python': 0,
-        \ 'python3': has('python3'),
-        \})
-  return s:result
-endfunction
-
 function! lista#rplugin#start(default) abort
-  if !s:init().python3
-    echoerr 'vim-lista requires a Vim with Python3 support (+python3)'
+  if !lista#rplugin#init()
     return
   endif
   python3 << EOC
@@ -30,4 +18,27 @@ def _temporary_scope():
 _temporary_scope()
 del _temporary_scope
 EOC
+endfunction
+
+
+function! lista#rplugin#init() abort
+  if exists('s:supported')
+    return s:supported
+  endif
+  try
+    call prompt#rplugin#init()
+    let result = rplugin#init(s:rep, {
+          \ 'python': 0,
+          \ 'python3': has('python3'),
+          \})
+    let s:supported = result.python3
+    if !s:supported
+      echoerr 'It requires a Neovim or Vim with Python3 support (+python3)'
+    endif
+  catch /^Vim\%((\a\+)\)\=:E117/
+    echoerr 'It requires a lambdalisue/vim-rplugin in Vim8.'
+    echoerr 'https://github.com/lambdalisue/vim-rplugin'
+    let s:supported = 0
+  endtry
+  return s:supported
 endfunction

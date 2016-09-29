@@ -18,7 +18,10 @@ Introductions
 Install
 -------------------------------------------------------------------------------
 
+The prompt interface is provided by [lambdalisue/prompt.nvim](https://github.com/lambdalisue/prompt.nvim).
+
 ```vim
+Plug 'lambdalisue/prompt.nvim'
 Plug 'lambdalisue/lista.nvim'
 ```
 
@@ -75,11 +78,6 @@ If you prefer to use `<C-n>/<C-p>` to select candidate like denite.nvim, use
 
 ```vim
 let g:lista#custom_mapping = [
-      \ ["\<C-D>", "\<Del>"],
-      \ ["\<C-A>", "\<Home>"],
-      \ ["\<C-E>", "\<End>"],
-      \ ["\<C-F>", "\<Left>"],
-      \ ["\<C-B>", "\<Right>"],
       \ ["\<C-P>", "\<C-T>", 1],  " 1 means 'noremap'
       \ ["\<C-N>", "\<C-G>", 1],
       \]
