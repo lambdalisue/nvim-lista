@@ -1,5 +1,7 @@
 lista
 ==============================================================================
+
+[![Join the chat at https://gitter.im/lista-nvim/Lobby](https://badges.gitter.im/lista-nvim/Lobby.svg)](https://gitter.im/lista-nvim/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Travis CI](https://img.shields.io/travis/lambdalisue/lista.nvim/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/lista.nvim)
 [![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/lista.nvim/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/lista.nvim/branch/master)
 ![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg?style=flat-square)
