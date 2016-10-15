@@ -12,8 +12,9 @@ def _temporary_scope():
     from lista.core import Lista
     from lista.context import Context
     nvim = rplugin.Neovim(vim)
-    context = Context(nvim)
-    lista = Lista(nvim, context)
+    Lista.prepare(nvim)
+    context = Context()
+    lista = Lista(context)
     lista.start(nvim.eval('a:default'))
 _temporary_scope()
 del _temporary_scope

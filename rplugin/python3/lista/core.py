@@ -1,5 +1,6 @@
 from prompt.prompt import Prompt
-from prompt.prompt.key import Key
+from prompt.util import preparation_required
+from .context import Context
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 
@@ -13,13 +14,41 @@ class Lista(Prompt):
         '%%#ListaStatuslineIndicator# %d/%d ',
     ])
 
-    def __init__(self, nvim, context):
-        self.matcher = AllMatcher(nvim)
+    @classmethod
+    def prepare(cls, nvim):
+        super().prepare(nvim)
+        Context.prepare(nvim)
+        AllMatcher.prepare(nvim)
+        FuzzyMatcher.prepare(nvim)
+
+    @preparation_required
+    def __new__(cls, context):
+        return super().__new__(cls, context)
+
+    def __init__(self, context):
+        super().__init__(context)
+        self.matcher = AllMatcher()
         self._previous = ''
-        super().__init__(
-            nvim, context,
-            use_extra_custom_mappings='lista#custom_mappings'
+        self.action.register(
+            'lista:select_next_candidate',
+            _select_next_candidate,
         )
+        self.action.register(
+            'lista:select_previous_candidate',
+            _select_previous_candidate,
+        )
+        self.action.register(
+            'lista:switch_matcher',
+            _switch_matcher,
+        )
+        self.keymap.register_from_rules([
+            ('<PageUp>', '<lista:select_previous_candidate>', 1),
+            ('<PageDown>', '<lista:select_next_candidate>', 1),
+            ('<C-^>', '<lista:switch_matcher>', 1),
+            ('<C-T>', '<PageUp>'),
+            ('<C-G>', '<PageDown>'),
+            ('<C-6>', '<C-^>'),
+        ])
 
     def assign_content(self, content):
         viewinfo = self.nvim.call('winsaveview')
@@ -39,16 +68,16 @@ class Lista(Prompt):
 
     def switch_matcher(self):
         if isinstance(self.matcher, AllMatcher):
-            self.matcher = FuzzyMatcher(self.nvim)
+            self.matcher = FuzzyMatcher()
         else:
-            self.matcher = AllMatcher(self.nvim)
+            self.matcher = AllMatcher()
         self._previous = ''
 
     def on_init(self, default):
         self.buffer = self.nvim.current.buffer
         self.window = self.nvim.current.window
         if self.context.buffer_number != self.buffer.number:
-            self.nvim.command('echoerr "vim-lista: Buffer number mismatch"')
+            self.nvim.command('echoerr "lista.nvim: Buffer number mismatch"')
             return True
         self.buffer.options['readonly'] = False
         self.buffer.options['modified'] = False
@@ -63,8 +92,8 @@ class Lista(Prompt):
 
     def on_redraw(self):
         self.window.options['statusline'] = self.statusline % (
-            self.operator.mode.capitalize(),
-            self.operator.mode.upper(),
+            self.mode.capitalize(),
+            self.mode.upper(),
             self.matcher.name,
             len(self.context.selected_indices),
             len(self.context.buffer_content),
@@ -80,7 +109,8 @@ class Lista(Prompt):
             self.context.selected_indices = list(
                 range(len(self.context.buffer_content))
             )
-            self.nvim.call('cursor', [1, self.window.cursor[1]])
+            if self.text:
+                self.nvim.call('cursor', [1, self.window.cursor[1]])
         elif previous != self.text:
             self.nvim.call('cursor', [1, self.window.cursor[1]])
 
@@ -96,25 +126,13 @@ class Lista(Prompt):
         ])
         return super().on_update(status)
 
-    def on_keypress(self, key):
-        if key in (Key(self.nvim, '<C-G>'), Key(self.nvim, '<PageDown>')):
-            line, col = self.window.cursor
-            self.nvim.call('cursor', [line + 1, col])
-        elif key in (Key(self.nvim, '<C-T>'), Key(self.nvim, '<PageUp>')):
-            line, col = self.window.cursor
-            self.nvim.call('cursor', [line - 1, col])
-        elif key == Key(self.nvim, '<C-^>'):
-            self.switch_matcher()
-        else:
-            return super().on_keypress(key)
-
     def on_term(self, status, result):
         self.matcher.highlight('')
         self.nvim.command('echo "%s" | redraw' % (
             "\n" * self.nvim.options['cmdheight']
         ))
         self.context.selected_line = self.window.cursor[0]
-        self.context.restore(self.nvim)
+        self.context.restore()
         if result:
             self.nvim.call(
                 'setreg', '/', self.matcher.highlight_pattern(result)
@@ -127,3 +145,17 @@ class Lista(Prompt):
         self.nvim.command('silent doautocmd Syntax')
         self.nvim.command('silent! normal! zvzz')
         return super().on_term(status, result)
+
+
+def _select_next_candidate(prompt):
+    line, col = prompt.window.cursor
+    prompt.nvim.call('cursor', [line + 1, col])
+
+
+def _select_previous_candidate(prompt):
+    line, col = prompt.window.cursor
+    prompt.nvim.call('cursor', [line - 1, col])
+
+
+def _switch_matcher(prompt):
+    prompt.switch_matcher()

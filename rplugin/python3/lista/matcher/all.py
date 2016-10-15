@@ -12,7 +12,7 @@ class Matcher(AbstractMatcher):
 
     def filter(self, query, indices, candidates):
         patterns = map(str.strip, query.split())
-        if self.nvim.eval('&ignorecase'):
+        if type(self).nvim.eval('&ignorecase'):
             patterns = list(map(str.lower, patterns))
             indices[:] = [
                 i for i in indices

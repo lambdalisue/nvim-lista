@@ -1,4 +1,5 @@
-from prompt.prompt.context import Context as BaseContext
+from prompt.context import Context as BaseContext
+from prompt.util import preparation_required
 
 
 class Context(BaseContext):
@@ -16,8 +17,17 @@ class Context(BaseContext):
         'undofile',
     ]
 
-    def __init__(self, nvim):
-        super().__init__(nvim)
+    @classmethod
+    def prepare(cls, nvim):
+        cls.nvim = nvim
+
+    @preparation_required
+    def __new__(cls):
+        return super().__new__(cls)
+
+    def __init__(self):
+        super().__init__()
+        nvim = type(self).nvim
         buffer = nvim.current.buffer
         self.buffer_number = buffer.number
         self.buffer_content = buffer[:]
@@ -46,7 +56,8 @@ class Context(BaseContext):
         self.undofile = nvim.call('tempname')
         nvim.command('silent wundo! %s' % self.undofile)
 
-    def restore(self, nvim):
+    def restore(self):
+        nvim = type(self).nvim
         if self.buffer_number != nvim.current.buffer.number:
             raise Exception('Buffer number mismatched')
         buffer = nvim.current.buffer

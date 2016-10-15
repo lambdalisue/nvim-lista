@@ -15,7 +15,7 @@ class Matcher(AbstractMatcher):
         chars = map(lambda x: '%s[^%s]*?' % (x, x), chars)
         pattern = ''.join(chars)
 
-        if self.nvim.eval('&ignorecase'):
+        if type(self).nvim.eval('&ignorecase'):
             pattern = re.compile(pattern.lower())
             indices[:] = [
                 i for i in indices

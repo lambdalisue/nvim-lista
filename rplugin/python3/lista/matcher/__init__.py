@@ -11,8 +11,11 @@ ESCAPE_VIM_PATTERN_TABLE = str.maketrans({
 
 
 class AbstractMatcher:
-    def __init__(self, nvim):
-        self.nvim = nvim
+    @classmethod
+    def prepare(cls, nvim):
+        cls.nvim = nvim
+
+    def __init__(self):
         self.match_id = None
 
     def __del__(self):
@@ -23,15 +26,15 @@ class AbstractMatcher:
 
     def highlight(self, query):
         if self.match_id:
-            self.nvim.call('matchdelete', self.match_id)
+            type(self).nvim.call('matchdelete', self.match_id)
             self.match_id = None
         if not query:
             return
         pattern = self.highlight_pattern(query)
-        self.match_id = self.nvim.call(
+        self.match_id = type(self).nvim.call(
             'matchadd',
             'Title',
-            ('\c' if self.nvim.options['ignorecase'] else '\C') + pattern,
+            ('\c' if type(self).nvim.options['ignorecase'] else '\C') + pattern,
             0,
         )
 

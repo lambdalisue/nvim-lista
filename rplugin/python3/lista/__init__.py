@@ -4,14 +4,15 @@ try:
     @neovim.plugin
     class ListaEntryPoint:
         def __init__(self, nvim):
-            self.nvim = nvim
+            from .core import Lista
+            Lista.prepare(nvim)
 
         @neovim.function('_lista_start', sync=True)
         def start(self, args):
             from .core import Lista
             from .context import Context
-            context = Context(self.nvim)
-            lista = Lista(self.nvim, context)
+            context = Context()
+            lista = Lista(context)
             lista.start(args[0])
             return
 except ImportError:
