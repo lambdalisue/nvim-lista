@@ -137,7 +137,7 @@ def _move_caret_to_tail(prompt):
 
 
 def _assign_previous_text(prompt):
-    prompt.text = prompt.history.previous(prompt)
+    prompt.text = prompt.history.previous()
 
 
 def _assign_next_text(prompt):
@@ -145,7 +145,7 @@ def _assign_next_text(prompt):
 
 
 def _assign_previous_matched_text(prompt):
-    prompt.text = prompt.history.previous_match(prompt)
+    prompt.text = prompt.history.previous_match()
 
 
 def _assign_next_matched_text(prompt):

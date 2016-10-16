@@ -7,6 +7,7 @@ try:
     from typing import (  # noqa: F401
         Iterator, Optional, Sequence, Tuple, Union
     )
+    from neovim import Nvim  # noqa: F401
     from .keystroke import KeystrokeExpr
     Rule = Union[
         Tuple[KeystrokeExpr, KeystrokeExpr],
@@ -32,7 +33,7 @@ class Keymap:
         """Register."""
         self.registry[lhs] = (lhs, rhs, noremap)
 
-    def register_from_rule(self, rule: 'Rule') -> None:
+    def register_from_rule(self, nvim: 'Nvim', rule: 'Rule') -> None:
         """Register."""
         if len(rule) == 2:
             lhs, rhs = cast('Tuple[KeystrokeExpr, KeystrokeExpr]', rule)
@@ -42,13 +43,15 @@ class Keymap:
                 'Tuple[KeystrokeExpr, KeystrokeExpr, bool]',
                 rule
             )
-        lhs = Keystroke(lhs)
-        rhs = Keystroke(rhs)
+        lhs = Keystroke.parse(nvim, lhs)
+        rhs = Keystroke.parse(nvim, rhs)
         self.register(lhs, rhs, noremap)
 
-    def register_from_rules(self, rules: 'Sequence[Rule]') -> None:
+    def register_from_rules(self,
+                            nvim: 'Nvim',
+                            rules: 'Sequence[Rule]') -> None:
         for rule in rules:
-            self.register_from_rule(rule)
+            self.register_from_rule(nvim, rule)
 
     def filter(self, lhs: Keystroke) -> 'Iterator[Keystroke]':
         """Filter."""
@@ -71,14 +74,14 @@ class Keymap:
         return None
 
     @classmethod
-    def from_rules(cls, rules: 'Sequence[Rule]') -> 'Keymap':
+    def from_rules(cls, nvim: 'Nvim', rules: 'Sequence[Rule]') -> 'Keymap':
         """Create keymap from rule."""
         keymap = cls()
-        keymap.register_from_rules(rules)
+        keymap.register_from_rules(nvim, rules)
         return keymap
 
 
-DEFAULT_KEYMAP = Keymap.from_rules((
+DEFAULT_KEYMAP_RULES = (
     ('<CR>', '<prompt:accept>', True),
     ('<ESC>', '<prompt:cancel>', True),
     ('<INSERT>', '<prompt:toggle_insert_mode>', True),
@@ -93,4 +96,4 @@ DEFAULT_KEYMAP = Keymap.from_rules((
     ('<Up>', '<prompt:assign_previous_matched_text>', True),
     ('<Down>', '<prompt:assign_next_matched_text>', True),
     ('<C-R>', '<prompt:paste_from_register>', True),
-))
+)

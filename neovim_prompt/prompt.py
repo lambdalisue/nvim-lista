@@ -1,7 +1,6 @@
 """Prompt module."""
 import re
 import copy
-from . import nvim
 from .key import Key
 from .keystroke import Keystroke
 
@@ -13,7 +12,6 @@ try:
     from neovim import Nvim  # noqa: F401
     from .key import KeyCode  # noqa: F401
     from .context import Context  # noqa: F401
-    from .keymap import Keymap  # noqa: F401
     from .action import Action  # noqa: F401
     KeystrokeType = Tuple[Key, ...]     # noqa: F401
     KeystrokeExpr = Union[KeystrokeType, bytes, str]    # noqa: F401
@@ -40,22 +38,23 @@ class Prompt:
     """Prompt class."""
     prefix = '# '
 
-    def __init__(self, context: 'Context') -> None:
+    def __init__(self, nvim: 'Nvim', context: 'Context') -> None:
         from .caret import Caret
         from .history import History
-        from .keymap import DEFAULT_KEYMAP
+        from .keymap import DEFAULT_KEYMAP_RULES, Keymap
         from .action import DEFAULT_ACTION
+        self.nvim = nvim
         self.mode = MODE_INSERT
         self.context = context
         self.caret = Caret(context)
         self.history = History(self)
         self.action = copy.copy(DEFAULT_ACTION)    # type: ignore
-        self.keymap = copy.copy(DEFAULT_KEYMAP)    # type: Keymap
+        self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
         # Apply custom keymapping
         if 'prompt#custom_mappings' in nvim.vars:
             custom_mappings = nvim.vars['prompt#custom_mappings']
             for rule in custom_mappings:
-                self.keymap.register_from_rule(rule)
+                self.keymap.register_from_rule(nvim, rule)
 
     @property
     def text(self) -> str:
@@ -97,6 +96,7 @@ class Prompt:
         keystroke = None
         while keystroke is None:
             previous, timeout = Keystroke.harvest(
+                self.nvim,
                 previous,
                 timeout,
             )
@@ -114,16 +114,16 @@ class Prompt:
                 status = self.on_keypress(rhs)
         except KeyboardInterrupt:
             status = STATUS_CANCEL
-        except nvim.error:
+        except self.nvim.error:
             status = STATUS_ERROR
-        nvim.command('redraw!')
+        self.nvim.command('redraw!')
         if self.text:
-            nvim.call('histadd', 'input', self.text)
+            self.nvim.call('histadd', 'input', self.text)
         result = None if status == -1 else self.text
         return self.on_term(status, result) or result
 
     def on_init(self, default):
-        nvim.call('inputsave')
+        self.nvim.call('inputsave')
         if default:
             self.text = default
 
@@ -131,7 +131,7 @@ class Prompt:
         backward_text = self.caret.get_backward_text()
         selected_text = self.caret.get_selected_text()
         forward_text = self.caret.get_forward_text()
-        nvim.command('|'.join([
+        self.nvim.command('|'.join([
             'redraw',
             'echohl Question',
             'echon "%s"' % self.prefix.translate(ESCAPE_ECHO),
@@ -154,4 +154,4 @@ class Prompt:
             return self.update_text(str(keys))
 
     def on_term(self, status, result):
-        nvim.call('inputrestore')
+        self.nvim.call('inputrestore')

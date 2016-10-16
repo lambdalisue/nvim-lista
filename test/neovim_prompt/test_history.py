@@ -3,8 +3,8 @@ from neovim_prompt.history import History
 import pytest
 
 
-def setup():
-    from neovim_prompt import nvim
+@pytest.fixture
+def prompt(prompt):
     history_candidates = (
         'foo',
         'bar',
@@ -28,7 +28,9 @@ def setup():
         elif fname == 'histget':
             return histget(*args)
 
-    nvim.call.side_effect = call
+    prompt.nvim.call = MagicMock()
+    prompt.nvim.call.side_effect = call
+    return prompt
 
 
 def test_current(prompt):
@@ -44,25 +46,25 @@ def test_previous(prompt):
     history = History(prompt)
     assert history.current() == 'fool'
 
-    assert history.previous(prompt) == 'foo'
+    assert history.previous() == 'foo'
     assert history.current() == 'foo'
 
-    assert history.previous(prompt) == 'bar'
+    assert history.previous() == 'bar'
     assert history.current() == 'bar'
 
-    assert history.previous(prompt) == 'foobar'
+    assert history.previous() == 'foobar'
     assert history.current() == 'foobar'
 
-    assert history.previous(prompt) == 'hoge'
+    assert history.previous() == 'hoge'
     assert history.current() == 'hoge'
 
-    assert history.previous(prompt) == 'barhoge'
+    assert history.previous() == 'barhoge'
     assert history.current() == 'barhoge'
 
-    assert history.previous(prompt) == 'foobarhoge'
+    assert history.previous() == 'foobarhoge'
     assert history.current() == 'foobarhoge'
 
-    assert history.previous(prompt) == 'foobarhoge'
+    assert history.previous() == 'foobarhoge'
     assert history.current() == 'foobarhoge'
 
 
@@ -70,7 +72,7 @@ def test_next(prompt):
     prompt.text = 'fool'
     prompt.caret.get_backward_text.return_value = 'fo'
     history = History(prompt)
-    [history.previous(prompt) for i in range(6)]
+    [history.previous() for i in range(6)]
     assert history.current() == 'foobarhoge'
 
     assert history.next() == 'barhoge'
@@ -101,16 +103,16 @@ def test_previous_match(prompt):
     history = History(prompt)
     assert history.current() == 'fool'
 
-    assert history.previous_match(prompt) == 'foo'
+    assert history.previous_match() == 'foo'
     assert history.current() == 'foo'
 
-    assert history.previous_match(prompt) == 'foobar'
+    assert history.previous_match() == 'foobar'
     assert history.current() == 'foobar'
 
-    assert history.previous_match(prompt) == 'foobarhoge'
+    assert history.previous_match() == 'foobarhoge'
     assert history.current() == 'foobarhoge'
 
-    assert history.previous_match(prompt) == 'foobarhoge'
+    assert history.previous_match() == 'foobarhoge'
     assert history.current() == 'foobarhoge'
 
 
@@ -118,7 +120,7 @@ def test_next_match(prompt):
     prompt.text = 'fool'
     prompt.caret.get_backward_text.return_value = 'fo'
     history = History(prompt)
-    [history.previous(prompt) for i in range(6)]
+    [history.previous() for i in range(6)]
     assert history.current() == 'foobarhoge'
 
     assert history.next_match() == 'foobar'

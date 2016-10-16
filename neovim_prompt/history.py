@@ -1,5 +1,5 @@
 """Command-line history module."""
-from . import nvim
+import weakref
 
 # Type annotation
 try:
@@ -13,7 +13,7 @@ except ImportError:
 class History:
     """History class which manage a Vim's command-line history for input. """
 
-    __slots__ = ('_index', '_cached', '_backward', '_threshold')
+    __slots__ = ('prompt', '_index', '_cached', '_backward', '_threshold')
 
     def __init__(self, prompt: 'Prompt') -> None:
         """Constructor.
@@ -24,10 +24,15 @@ class History:
                 stored.
 
         """
+        self.prompt = weakref.proxy(prompt)
         self._index = 0
         self._cached = prompt.text
         self._backward = prompt.caret.get_backward_text()
         self._threshold = 0
+
+    @property
+    def nvim(self):
+        return self.prompt.nvim
 
     def current(self) -> str:
         """Current command-line history value of input.
@@ -39,9 +44,9 @@ class History:
         """
         if self._index == 0:
             return self._cached
-        return nvim.call('histget', 'input', -self._index)
+        return self.nvim.call('histget', 'input', -self._index)
 
-    def previous(self, prompt: 'Prompt') -> str:
+    def previous(self) -> str:
         """Get previous command-line history value of input.
 
         It increases an internal index and points to a previous command-line
@@ -60,8 +65,8 @@ class History:
             str: A previous command-line history value of input.
         """
         if self._index == 0:
-            self._cached = prompt.text
-            self._threshold = nvim.call('histnr', 'input')
+            self._cached = self.prompt.text
+            self._threshold = self.nvim.call('histnr', 'input')
         if self._index < self._threshold:
             self._index += 1
         return self.current()
@@ -79,7 +84,7 @@ class History:
             self._index -= 1
         return self.current()
 
-    def previous_match(self, prompt: 'Prompt') -> str:
+    def previous_match(self) -> str:
         """Get previous command-line history value which matches with an
         initial query text.
 
@@ -98,15 +103,15 @@ class History:
             str: A matched previous command-line history value of input.
         """
         if self._index == 0:
-            self._backward = prompt.caret.get_backward_text()
+            self._backward = self.prompt.caret.get_backward_text()
         index = _index = self._index - 1
         while _index < self._index:
             _index = self._index
-            candidate = self.previous(prompt)
+            candidate = self.previous()
             if candidate.startswith(self._backward):
                 return candidate
         self._index = index
-        return self.previous(prompt)
+        return self.previous()
 
     def next_match(self) -> str:
         """Get next command-line history value of input which matches with an

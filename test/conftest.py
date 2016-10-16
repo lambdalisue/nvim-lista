@@ -8,15 +8,21 @@ sys.path.insert(0, BASE_DIR)
 
 
 @pytest.fixture
+def nvim():
+    nvim = MagicMock(spec='neovim.Nvim')
+    nvim.options = {
+        'encoding': 'utf-8',
+    }
+    return nvim
+
+
+@pytest.fixture
 def context():
     Context = MagicMock(spec='neovim_prompt.context.Context')
     return Context()
 
 
 @pytest.fixture
-def prompt(context):
+def prompt(nvim, context):
     Prompt = MagicMock(spec='neovim_prompt.prompt.Prompt')
-    return Prompt(context)
-
-
-
+    return Prompt(nvim, context)
