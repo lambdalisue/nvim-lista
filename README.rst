@@ -8,8 +8,8 @@ neovim-prompt
     :target: https://scrutinizer-ci.com/g/lambdalisue/neovim-prompt/inspections
     :alt: Code quality
 
-.. image:: https://img.shields.io/coveralls/jekyll/jekyll/master.svg
-    :target: https://coveralls.io/r/lambdalisue/neovim-prompt/
+.. image:: https://coveralls.io/repos/github/lambdalisue/neovim-prompt/badge.svg?branch=master
+    :target: https://coveralls.io/github/lambdalisue/neovim-prompt?branch=master
     :alt: Coverage
 
 .. image:: https://requires.io/github/lambdalisue/neovim-prompt/requirements.svg?branch=master
