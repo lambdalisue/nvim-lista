@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages
 
 NAME = 'neovim-prompt'
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 
 
 def read(filename):
