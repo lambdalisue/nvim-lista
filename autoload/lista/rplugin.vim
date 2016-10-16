@@ -9,12 +9,11 @@ function! lista#rplugin#start(default) abort
 def _temporary_scope():
     import vim
     import rplugin
-    from lista.core import Lista
+    from lista.lista import Lista
     from lista.context import Context
     nvim = rplugin.Neovim(vim)
-    Lista.prepare(nvim)
     context = Context()
-    lista = Lista(context)
+    lista = Lista(nvim, context)
     lista.start(nvim.eval('a:default'))
 _temporary_scope()
 del _temporary_scope

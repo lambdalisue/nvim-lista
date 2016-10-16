@@ -1,6 +1,4 @@
-from prompt.prompt import Prompt
-from prompt.util import preparation_required
-from .context import Context
+from neovim_prompt.prompt import Prompt
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 
@@ -14,34 +12,16 @@ class Lista(Prompt):
         '%%#ListaStatuslineIndicator# %d/%d ',
     ])
 
-    @classmethod
-    def prepare(cls, nvim):
-        super().prepare(nvim)
-        Context.prepare(nvim)
-        AllMatcher.prepare(nvim)
-        FuzzyMatcher.prepare(nvim)
-
-    @preparation_required
-    def __new__(cls, context):
-        return super().__new__(cls, context)
-
-    def __init__(self, context):
-        super().__init__(context)
-        self.matcher = AllMatcher()
+    def __init__(self, nvim: 'Nvim', context: 'Context') -> None:
+        super().__init__(nvim, context)
+        self.matcher = AllMatcher(nvim)
         self._previous = ''
-        self.action.register(
-            'lista:select_next_candidate',
-            _select_next_candidate,
-        )
-        self.action.register(
-            'lista:select_previous_candidate',
-            _select_previous_candidate,
-        )
-        self.action.register(
-            'lista:switch_matcher',
-            _switch_matcher,
-        )
-        self.keymap.register_from_rules([
+        self.action.register_from_rules([
+            ('lista:select_next_candidate', _select_next_candidate),
+            ('lista:select_previous_candidate', _select_previous_candidate),
+            ('lista:switch_matcher', _switch_matcher),
+        ])
+        self.keymap.register_from_rules(nvim, [
             ('<PageUp>', '<lista:select_previous_candidate>', 1),
             ('<PageDown>', '<lista:select_next_candidate>', 1),
             ('<C-^>', '<lista:switch_matcher>', 1),
@@ -49,6 +29,22 @@ class Lista(Prompt):
             ('<C-G>', '<PageDown>'),
             ('<C-6>', '<C-^>'),
         ])
+
+    def start(self, default: str) -> 'Optional[str]':
+        with self.context:
+            result = super().start(default)
+        if result:
+            self.nvim.call(
+                'setreg', '/', self.matcher.highlight_pattern(result)
+            )
+            if (self.context.selected_line and
+                    len(self.context.selected_indices) > 0):
+                line = self.context.selected_line
+                index = self.context.selected_indices[line-1]
+                self.nvim.call('cursor', [index + 1, 0])
+        self.nvim.command('silent doautocmd Syntax')
+        self.nvim.command('silent! normal! zvzz')
+        return result
 
     def assign_content(self, content):
         viewinfo = self.nvim.call('winsaveview')
@@ -68,9 +64,9 @@ class Lista(Prompt):
 
     def switch_matcher(self):
         if isinstance(self.matcher, AllMatcher):
-            self.matcher = FuzzyMatcher()
+            self.matcher = FuzzyMatcher(self.nvim)
         else:
-            self.matcher = AllMatcher()
+            self.matcher = AllMatcher(self.nvim)
         self._previous = ''
 
     def on_init(self, default):
@@ -132,18 +128,6 @@ class Lista(Prompt):
             "\n" * self.nvim.options['cmdheight']
         ))
         self.context.selected_line = self.window.cursor[0]
-        self.context.restore()
-        if result:
-            self.nvim.call(
-                'setreg', '/', self.matcher.highlight_pattern(result)
-            )
-            if (self.context.selected_line and
-                    len(self.context.selected_indices) > 0):
-                line = self.context.selected_line
-                index = self.context.selected_indices[line-1]
-                self.nvim.call('cursor', [index + 1, 0])
-        self.nvim.command('silent doautocmd Syntax')
-        self.nvim.command('silent! normal! zvzz')
         return super().on_term(status, result)
 
 

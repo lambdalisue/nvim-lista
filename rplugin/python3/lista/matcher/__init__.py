@@ -11,37 +11,35 @@ ESCAPE_VIM_PATTERN_TABLE = str.maketrans({
 
 
 class AbstractMatcher:
-    @classmethod
-    def prepare(cls, nvim):
-        cls.nvim = nvim
+    def __init__(self, nvim: 'Nvim') -> None:
+        self.nvim = nvim
+        self.match_id = None    # type: int
+        self.ignorecase = nvim.options['ignorecase']
 
-    def __init__(self):
-        self.match_id = None
-
-    def __del__(self):
-        self.highlight('')
-
-    def highlight_pattern(self, query):
+    def highlight_pattern(self, query: str) -> str:
         raise NotImplementedError
 
-    def highlight(self, query):
+    def highlight(self, query: str) -> None:
         if self.match_id:
-            type(self).nvim.call('matchdelete', self.match_id)
+            self.nvim.call('matchdelete', self.match_id)
             self.match_id = None
         if not query:
             return
         pattern = self.highlight_pattern(query)
-        self.match_id = type(self).nvim.call(
+        self.match_id = self.nvim.call(
             'matchadd',
             'Title',
-            ('\c' if type(self).nvim.options['ignorecase'] else '\C') + pattern,
+            ('\c' if self.ignorecase else '\C') + pattern,
             0,
         )
 
-    def filter(self, query, indices, candidates):
+    def filter(self,
+               query: str,
+               indices: 'Sequence[int]',
+               candidates: 'Sequence[str]') -> 'Sequence[int]':
         raise NotImplementedError
 
 
-def escape_vim_patterns(text):
+def escape_vim_patterns(text: str) -> str:
     """Escape patterh character used in Vim regex"""
     return text.translate(ESCAPE_VIM_PATTERN_TABLE)

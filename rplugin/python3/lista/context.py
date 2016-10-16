@@ -1,9 +1,8 @@
-from prompt.context import Context as BaseContext
-from prompt.util import preparation_required
+from neovim_prompt.context import Context as BaseContext
 
 
 class Context(BaseContext):
-    __slots__ = [
+    __slots__ = (
         'nvim',
         'text',
         'caret_locus',
@@ -15,20 +14,14 @@ class Context(BaseContext):
         'selected_indices',
         'viewinfo',
         'undofile',
-    ]
+    )
 
-    @classmethod
-    def prepare(cls, nvim):
-        cls.nvim = nvim
-
-    @preparation_required
-    def __new__(cls):
-        return super().__new__(cls)
-
-    def __init__(self):
+    def __init__(self, nvim: 'Nvim') -> None:
         super().__init__()
-        nvim = type(self).nvim
-        buffer = nvim.current.buffer
+        self.nvim = nvim
+
+    def __enter__(self) -> 'Context':
+        buffer = self.nvim.current.buffer
         self.buffer_number = buffer.number
         self.buffer_content = buffer[:]
         self.buffer_options = {
@@ -39,7 +32,7 @@ class Context(BaseContext):
                 'modifiable',
             ]
         }
-        window = nvim.current.window
+        window = self.nvim.current.window
         self.window_options = {
             k: window.options[k] for k in [
                 'spell',
@@ -52,22 +45,21 @@ class Context(BaseContext):
         }
         self.selected_line = 0
         self.selected_indices = range(len(self.buffer_content))
-        self.viewinfo = nvim.call('winsaveview')
-        self.undofile = nvim.call('tempname')
-        nvim.command('silent wundo! %s' % self.undofile)
+        self.viewinfo = self.nvim.call('winsaveview')
+        self.undofile = self.nvim.call('tempname')
+        self.nvim.command('silent wundo! %s' % self.undofile)
 
-    def restore(self):
-        nvim = type(self).nvim
-        if self.buffer_number != nvim.current.buffer.number:
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        if self.buffer_number != self.nvim.current.buffer.number:
             raise Exception('Buffer number mismatched')
-        buffer = nvim.current.buffer
+        buffer = self.nvim.current.buffer
         buffer.options['readonly'] = False
         buffer.options['modifiable'] = True
         buffer[:] = self.buffer_content
         for k, v in self.buffer_options.items():
             buffer.options[k] = v
-        window = nvim.current.window
+        window = self.nvim.current.window
         for k, v in self.window_options.items():
             window.options[k] = v
-        nvim.call('winrestview', self.viewinfo)
-        nvim.command('silent! rundo %s' % self.undofile)
+        self.nvim.call('winrestview', self.viewinfo)
+        self.nvim.command('silent! rundo %s' % self.undofile)

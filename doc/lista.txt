@@ -50,8 +50,8 @@ The following mappings are available on the lista interface:
 	<Up>		Use previous input history
 	<Down>		Use next input history
 	<C-R>		Start a paste mode as like |i_CTRL-R|
-	<C-n>		Select a next line
-	<C-p>		Select a previous line
+	<C-g>		Select a next line
+	<C-t>		Select a previous line
 	<C-^>		Switch a matcher
 
 ==============================================================================

@@ -18,10 +18,15 @@ Introductions
 Install
 -------------------------------------------------------------------------------
 
-The prompt interface is provided by [lambdalisue/prompt.nvim](https://github.com/lambdalisue/prompt.nvim).
+The prompt interface is provided by [lambdalisue/neovim-prompt](https://github.com/lambdalisue/neovim-prompt) so first you need to install that dependency.
+
+```sh
+$ pip install neovim-prompt
+```
+
+And then install it with your favorite plugin manager.
 
 ```vim
-Plug 'lambdalisue/prompt.nvim'
 Plug 'lambdalisue/lista.nvim'
 ```
 
@@ -77,7 +82,7 @@ nnoremap g# :<C-u>ListaCursorWord<CR>
 If you prefer to use `<C-n>/<C-p>` to select candidate like denite.nvim, use
 
 ```vim
-let g:lista#custom_mapping = [
+let g:prompt#custom_mapping = [
       \ ["\<C-P>", "\<C-T>", 1],  " 1 means 'noremap'
       \ ["\<C-N>", "\<C-G>", 1],
       \]
@@ -85,13 +90,6 @@ let g:lista#custom_mapping = [
 
 Note that multi-byte characters are not supported only in GVim.
 
-
-ToDo
--------------------------------------------------------------------------------
-
-- [ ] Multikeys mapping (e.g. `<C-k>ab`)
-- [ ] Digraphs (`<C-k> <char1> <char2>`)
-- [ ] Translate `cmap`
 
 See also
 -------------------------------------------------------------------------------

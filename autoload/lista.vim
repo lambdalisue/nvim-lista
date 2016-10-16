@@ -7,4 +7,3 @@ else
     return lista#rplugin#start(a:default)
   endfunction
 endif
-call prompt#init()
