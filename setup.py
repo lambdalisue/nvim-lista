@@ -26,7 +26,7 @@ setup(
     long_description=read('README.rst'),
     classifiers=(
         'Development Status :: 4 - Beta',
-        'Environment :: Plugins'
+        'Environment :: Plugins',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
