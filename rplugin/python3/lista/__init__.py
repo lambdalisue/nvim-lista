@@ -10,7 +10,7 @@ try:
         def start(self, args):
             from .lista import Lista
             from .context import Context
-            context = Context(self.nvim)
+            context = Context()
             lista = Lista(self.nvim, context)
             lista.start(args[0])
             return

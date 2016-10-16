@@ -60,6 +60,7 @@ Key		| Description
 `<C-G>`		| Select a next line of the buffer
 `<C-R>`		| Insert the contents of a register or object under the cursor as if typed
 `<C-^>`		| Switch a current matcher
+`<C-I>`		| Switch ignorecase
 `<Insert>`	| Toggle insert/replace mode
 
 And the following Emacs-like custom mappings which is defined by `g:lista#custom_mapping`

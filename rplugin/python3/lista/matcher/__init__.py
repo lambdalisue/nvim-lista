@@ -14,7 +14,10 @@ class AbstractMatcher:
     def __init__(self, nvim: 'Nvim') -> None:
         self.nvim = nvim
         self.match_id = None    # type: int
-        self.ignorecase = nvim.options['ignorecase']
+
+    @property
+    def ignorecase(self):
+        return self.nvim.options['ignorecase']
 
     def highlight_pattern(self, query: str) -> str:
         raise NotImplementedError

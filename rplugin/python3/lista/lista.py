@@ -9,6 +9,7 @@ class Lista(Prompt):
         '%%#ListaStatuslineFile# %%f ',
         '%%#ListaStatuslineMiddle#%%=',
         '%%#ListaStatuslineMatcher# Matcher: %s (C-^ to switch) ',
+        '%%#ListaStatuslineMatcher# %s (C-I to switch) ',
         '%%#ListaStatuslineIndicator# %d/%d ',
     ])
 
@@ -20,46 +21,30 @@ class Lista(Prompt):
             ('lista:select_next_candidate', _select_next_candidate),
             ('lista:select_previous_candidate', _select_previous_candidate),
             ('lista:switch_matcher', _switch_matcher),
+            ('lista:switch_ignorecase', _switch_ignorecase),
         ])
         self.keymap.register_from_rules(nvim, [
             ('<PageUp>', '<lista:select_previous_candidate>', 1),
             ('<PageDown>', '<lista:select_next_candidate>', 1),
             ('<C-^>', '<lista:switch_matcher>', 1),
+            ('<C-I>', '<lista:switch_ignorecase>', 1),
             ('<C-T>', '<PageUp>'),
             ('<C-G>', '<PageDown>'),
             ('<C-6>', '<C-^>'),
         ])
 
-    def start(self, default: str) -> 'Optional[str]':
-        with self.context:
-            result = super().start(default)
-        if result:
-            self.nvim.call(
-                'setreg', '/', self.matcher.highlight_pattern(result)
-            )
-            if (self.context.selected_line and
-                    len(self.context.selected_indices) > 0):
-                line = self.context.selected_line
-                index = self.context.selected_indices[line-1]
-                self.nvim.call('cursor', [index + 1, 0])
-        self.nvim.command('silent doautocmd Syntax')
-        self.nvim.command('silent! normal! zvzz')
-        return result
+    @property
+    def case_mode(self):
+        if self.nvim.options['ignorecase']:
+            return 'Case-insensitive'
+        else:
+            return 'Case-sensitive'
 
     def assign_content(self, content):
         viewinfo = self.nvim.call('winsaveview')
-        buffer_options = {
-            k: self.buffer.options[k] for k in [
-                'readonly',
-                'modified',
-                'modifiable',
-            ]
-        }
-        self.buffer.options['readonly'] = False
-        self.buffer.options['modifiable'] = True
-        self.buffer[:] = content
-        for k, v in buffer_options.items():
-            self.buffer.options[k] = v
+        self.nvim.current.buffer.options['modifiable'] = True
+        self.nvim.current.buffer[:] = content
+        self.nvim.current.buffer.options['modifiable'] = False
         self.nvim.call('winrestview', viewinfo)
 
     def switch_matcher(self):
@@ -69,30 +54,43 @@ class Lista(Prompt):
             self.matcher = AllMatcher(self.nvim)
         self._previous = ''
 
+    def switch_ignorecase(self):
+        if self.nvim.options['ignorecase']:
+            self.nvim.options['ignorecase'] = False
+        else:
+            self.nvim.options['ignorecase'] = True
+        self._previous = ''
+
     def on_init(self, default):
+        viewinfo = self.nvim.call('winsaveview')
+        self.context.content = self.nvim.current.buffer[:]
+        self.context.selected_line = 0
+        self.context.selected_indices = list(range(len(self.context.content)))
         self.buffer = self.nvim.current.buffer
-        self.window = self.nvim.current.window
-        if self.context.buffer_number != self.buffer.number:
-            self.nvim.command('echoerr "lista.nvim: Buffer number mismatch"')
-            return True
-        self.buffer.options['readonly'] = False
-        self.buffer.options['modified'] = False
-        self.buffer.options['modifiable'] = False
-        self.window.options['spell'] = False
-        self.window.options['foldenable'] = False
-        self.window.options['colorcolumn'] = ''
-        self.window.options['cursorline'] = True
-        self.window.options['cursorcolumn'] = False
+        self.nvim.command('keepjumps enew')
+        self.nvim.current.buffer[:] = self.context.content
+        self.nvim.current.buffer.options['bufhidden'] = 'wipe'
+        self.nvim.current.buffer.options['readonly'] = False
+        self.nvim.current.buffer.options['readonly'] = False
+        self.nvim.current.buffer.options['modified'] = False
+        self.nvim.current.buffer.options['modifiable'] = False
+        self.nvim.current.window.options['spell'] = False
+        self.nvim.current.window.options['foldenable'] = False
+        self.nvim.current.window.options['colorcolumn'] = ''
+        self.nvim.current.window.options['cursorline'] = True
+        self.nvim.current.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
+        self.nvim.call('winrestview', viewinfo)
         return super().on_init(default)
 
     def on_redraw(self):
-        self.window.options['statusline'] = self.statusline % (
+        self.nvim.current.window.options['statusline'] = self.statusline % (
             self.mode.capitalize(),
             self.mode.upper(),
             self.matcher.name,
+            self.case_mode,
             len(self.context.selected_indices),
-            len(self.context.buffer_content),
+            len(self.context.content),
         )
         self.nvim.command('redrawstatus')
         return super().on_redraw()
@@ -103,21 +101,24 @@ class Lista(Prompt):
 
         if not previous or not self.text.startswith(previous):
             self.context.selected_indices = list(
-                range(len(self.context.buffer_content))
+                range(len(self.context.content))
             )
             if self.text:
-                self.nvim.call('cursor', [1, self.window.cursor[1]])
+                self.nvim.call(
+                    'cursor',
+                    [1, self.nvim.current.window.cursor[1]]
+                )
         elif previous != self.text:
-            self.nvim.call('cursor', [1, self.window.cursor[1]])
+            self.nvim.call('cursor', [1, self.nvim.current.window.cursor[1]])
 
         self.matcher.highlight(self.text)
         self.matcher.filter(
             self.text,
             self.context.selected_indices,
-            self.context.buffer_content,
+            self.context.content,
         )
         self.assign_content([
-            self.context.buffer_content[i]
+            self.context.content[i]
             for i in self.context.selected_indices
         ])
         return super().on_update(status)
@@ -127,19 +128,35 @@ class Lista(Prompt):
         self.nvim.command('echo "%s" | redraw' % (
             "\n" * self.nvim.options['cmdheight']
         ))
-        self.context.selected_line = self.window.cursor[0]
+        self.context.selected_line = self.nvim.current.window.cursor[0]
+        self.nvim.current.buffer.options['modified'] = False
+        self.nvim.command('keepjumps %dbuffer' % self.buffer.number)
+        if result:
+            self.nvim.call(
+                'setreg', '/', self.matcher.highlight_pattern(result)
+            )
+            if (self.context.selected_line and
+                    len(self.context.selected_indices) > 0):
+                line = self.context.selected_line
+                index = self.context.selected_indices[line-1]
+                self.nvim.call('cursor', [index + 1, 0])
+                self.nvim.command('normal! zvzz')
         return super().on_term(status, result)
 
 
 def _select_next_candidate(prompt):
-    line, col = prompt.window.cursor
+    line, col = prompt.nvim.current.window.cursor
     prompt.nvim.call('cursor', [line + 1, col])
 
 
 def _select_previous_candidate(prompt):
-    line, col = prompt.window.cursor
+    line, col = prompt.nvim.current.window.cursor
     prompt.nvim.call('cursor', [line - 1, col])
 
 
 def _switch_matcher(prompt):
     prompt.switch_matcher()
+
+
+def _switch_ignorecase(prompt):
+    prompt.switch_ignorecase()
