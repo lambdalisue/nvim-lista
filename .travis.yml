@@ -1,0 +1,17 @@
+sudo: false
+language: python
+python:
+  - 3.3
+  - 3.4
+  - 3.5
+
+install:
+  - pip install tox tox-travis
+  - pip install coverage coveralls
+
+script:
+  - tox -r
+
+after_success:
+  - coverage report
+  - coveralls
