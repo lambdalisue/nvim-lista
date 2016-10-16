@@ -48,6 +48,7 @@ class Lista(Prompt):
         self.nvim.call('winrestview', viewinfo)
 
     def switch_matcher(self):
+        self.matcher.highlight('')
         if isinstance(self.matcher, AllMatcher):
             self.matcher = FuzzyMatcher(self.nvim)
         else:
