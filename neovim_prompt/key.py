@@ -1,17 +1,13 @@
 """Key module."""
 from curses import ascii  # type: ignore
 from collections import namedtuple
+from typing import cast, Union, Tuple, Dict     # noqa: F401
+from neovim import Nvim
 from .util import ensure_bytes, ensure_str, int2chr
 
-# Type annotation
-try:
-    from typing import cast
-    from typing import Union, Tuple, Dict, Optional  # noqa: F401
-    from neovim import Nvim  # noqa: F401
-    KeyCode = Union[int, bytes]  # noqa: F401
-    KeyExpr = Union[KeyCode, str]  # noqa: F401
-except ImportError:
-    cast = lambda t, x: x   # noqa: E731
+
+KeyCode = Union[int, bytes]
+KeyExpr = Union[KeyCode, str]
 
 
 ESCAPE_QUOTE = str.maketrans({
@@ -93,7 +89,7 @@ class Key(KeyBase):
     __cached = {}   # type: Dict[KeyExpr, Key]
 
     @classmethod
-    def parse(cls, nvim: 'Nvim', expr: 'KeyExpr') -> 'Key':
+    def parse(cls, nvim: Nvim, expr: KeyExpr) -> 'Key':
         """Parse a key expression and return a Key instance.
 
         It returns a Key instance of a key expression. The instance is cached
@@ -118,7 +114,7 @@ class Key(KeyBase):
         return cls.__cached[expr]
 
 
-def _resolve(nvim: 'Nvim', expr: 'KeyExpr') -> 'KeyCode':
+def _resolve(nvim: Nvim, expr: KeyExpr) -> KeyCode:
     if isinstance(expr, int):
         return expr
     elif isinstance(expr, str):
@@ -142,7 +138,7 @@ def _resolve(nvim: 'Nvim', expr: 'KeyExpr') -> 'KeyCode':
     return expr
 
 
-def _resolve_from_special_keys(nvim: 'Nvim', inner: bytes) -> 'KeyCode':
+def _resolve_from_special_keys(nvim: Nvim, inner: bytes) -> KeyCode:
     inner_upper = inner.upper()
     inner_upper_str = ensure_str(nvim, inner_upper)
     if inner_upper_str in SPECIAL_KEYS:

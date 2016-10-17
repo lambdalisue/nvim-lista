@@ -1,20 +1,14 @@
 """Keystroke module."""
 import re
 from datetime import datetime, timedelta
+from typing import cast, Optional, Union, Tuple, Iterable
+from neovim import Nvim
 from .key import Key
-from .util import ensure_bytes
+from .util import ensure_bytes, getchar
 
-# Type annotation
-try:
-    from typing import cast
-    from typing import Optional, Union, Tuple, Iterable  # noqa: F401
-    from neovim import Nvim  # noqa: F401
-    from .key import KeyCode  # noqa: F401
 
-    KeystrokeType = Tuple[Key, ...]
-    KeystrokeExpr = Union[KeystrokeType, bytes, str]
-except ImportError:
-    cast = lambda t, x: x   # noqa: E731
+KeystrokeType = Tuple[Key, ...]
+KeystrokeExpr = Union[KeystrokeType, bytes, str]
 
 
 KEYS_PATTERN = re.compile(b'(?:<[^>]+>|\S)')
@@ -27,7 +21,7 @@ class Keystroke(tuple):
     __slots__ = ()  # type: Tuple[str, ...]
 
     @classmethod
-    def parse(cls, nvim: 'Nvim', expr: 'KeystrokeExpr') -> 'Keystroke':
+    def parse(cls, nvim: Nvim, expr: KeystrokeExpr) -> 'Keystroke':
         """Parse a keystroke expression and return a Keystroke instance.
 
         Args:
@@ -38,22 +32,22 @@ class Keystroke(tuple):
             Keystroke: A Keystroke instance.
         """
         keys = _ensure_keys(nvim, expr)
-        instance = cls(cast('Iterable', keys))
+        instance = cls(cast(Iterable, keys))
         return instance
 
     @classmethod
     def harvest(cls,
-                nvim: 'Nvim',
-                previous: 'Optional[Keystroke]'=None,
-                timeout: 'Optional[datetime]'=None
-                ) -> 'Tuple[Keystroke, datetime]':
+                nvim: Nvim,
+                previous: Optional['Keystroke']=None,
+                timeout: Optional[datetime]=None
+                ) -> Tuple['Keystroke', datetime]:
         """Harvest keystroke."""
         if previous is None and timeout is None:
             if nvim.options['timeout']:
                 timeout = datetime.now() + timedelta(
                     milliseconds=int(nvim.options['timeoutlen']),
                 )
-        key = Key.parse(nvim, _getchar(nvim))
+        key = Key.parse(nvim, getchar(nvim))
         if previous is None or (timeout and timeout < datetime.now()):
             keystroke = Keystroke([key])
         else:
@@ -70,7 +64,7 @@ class Keystroke(tuple):
         return ''.join(k.char for k in self)
 
 
-def _ensure_keys(nvim: 'Nvim', expr: 'KeystrokeExpr') -> 'KeystrokeType':
+def _ensure_keys(nvim: Nvim, expr: KeystrokeExpr) -> KeystrokeType:
     """Ensure keys."""
     if isinstance(expr, (bytes, str)):
         expr_bytes = ensure_bytes(nvim, expr)   # type: ignore
@@ -81,11 +75,3 @@ def _ensure_keys(nvim: 'Nvim', expr: 'KeystrokeExpr') -> 'KeystrokeType':
     else:
         keys = tuple(expr)
     return keys
-
-
-def _getchar(nvim: 'Nvim') -> 'KeyCode':
-    ret = nvim.call('prompt#getchar')
-    if isinstance(ret, int):
-        return ret
-    else:
-        return bytes(ret)

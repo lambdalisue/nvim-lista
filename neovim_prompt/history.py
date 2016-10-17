@@ -1,21 +1,15 @@
 """Command-line history module."""
 import weakref
-
-# Type annotation
-try:
-    from typing import Optional  # noqa: F401
-    from neovim import Nvim  # noqa: F401
-    from .prompt import Prompt  # noqa: F401
-except ImportError:
-    pass
+from neovim import Nvim
+from .prompt import Prompt
 
 
 class History:
-    """History class which manage a Vim's command-line history for input. """
+    """History class which manage a Vim's command-line history for input."""
 
     __slots__ = ('prompt', '_index', '_cached', '_backward', '_threshold')
 
-    def __init__(self, prompt: 'Prompt') -> None:
+    def __init__(self, prompt: Prompt) -> None:
         """Constructor.
 
         Args:
@@ -31,7 +25,8 @@ class History:
         self._threshold = 0
 
     @property
-    def nvim(self):
+    def nvim(self) -> Nvim:
+        """A ``neovim.Nvim`` instance."""
         return self.prompt.nvim
 
     def current(self) -> str:
@@ -85,8 +80,8 @@ class History:
         return self.current()
 
     def previous_match(self) -> str:
-        """Get previous command-line history value which matches with an
-        initial query text.
+        """
+        Get previous matched command-line history value of input.
 
         The initial query text is a text before the cursor when an internal
         index was 0 (like a cached value but only before the cursor.)
@@ -114,8 +109,7 @@ class History:
         return self.previous()
 
     def next_match(self) -> str:
-        """Get next command-line history value of input which matches with an
-        initial query text.
+        """Get next matched command-line history value of input.
 
         The initial query text is a text before the cursor when an internal
         index was 0 (like a cached value but only before the cursor.)

@@ -1,16 +1,11 @@
 """Utility module."""
-
-# Type annotation
-try:
-    from typing import AnyStr  # noqa: F401
-    from neovim import Nvim  # noqa: F401
-except ImportError:
-    pass
+from typing import AnyStr, Union
+from neovim import Nvim
 
 _cached_encoding = None     # type: str
 
 
-def get_encoding(nvim: 'Nvim') -> str:
+def get_encoding(nvim: Nvim) -> str:
     """Return a Vim's internal encoding.
 
     The retrieve encoding is cached to the function instance while encoding
@@ -29,7 +24,7 @@ def get_encoding(nvim: 'Nvim') -> str:
     return _cached_encoding
 
 
-def ensure_bytes(nvim: 'Nvim', seed: 'AnyStr') -> bytes:
+def ensure_bytes(nvim: Nvim, seed: AnyStr) -> bytes:
     """Encode `str` to `bytes` if necessary and return."""
     if isinstance(seed, str):
         encoding = get_encoding(nvim)
@@ -37,7 +32,7 @@ def ensure_bytes(nvim: 'Nvim', seed: 'AnyStr') -> bytes:
     return seed
 
 
-def ensure_str(nvim: 'Nvim', seed: 'AnyStr') -> str:
+def ensure_str(nvim: Nvim, seed: AnyStr) -> str:
     """Decode `bytes` to `str` if necessary and return."""
     if isinstance(seed, bytes):
         encoding = get_encoding(nvim)
@@ -45,7 +40,7 @@ def ensure_str(nvim: 'Nvim', seed: 'AnyStr') -> str:
     return seed
 
 
-def int2chr(nvim: 'Nvim', code: int) -> str:
+def int2chr(nvim: Nvim, code: int) -> str:
     """Return a corresponding char of `code`.
 
     It uses "nr2char()" in Vim script when 'encoding' option is not utf-8.
@@ -55,3 +50,11 @@ def int2chr(nvim: 'Nvim', code: int) -> str:
     if encoding in ('utf-8', 'utf8'):
         return chr(code)
     return nvim.call('nr2char', code)
+
+
+def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
+    """Call getchar and return int or bytes instance."""
+    ret = nvim.call('getchar', *args)
+    if isinstance(ret, int):
+        return ret
+    return ensure_bytes(nvim, ret)

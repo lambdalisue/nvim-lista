@@ -1,9 +1,5 @@
 """Caret module."""
-# Type annotation
-try:
-    from .context import Context     # noqa: F401
-except ImportError:
-    pass
+from .context import Context
 
 
 class Caret:
@@ -20,7 +16,7 @@ class Caret:
 
     __slots__ = ('context',)
 
-    def __init__(self, context: 'Context') -> None:
+    def __init__(self, context: Context) -> None:
         """Constructor.
 
         Args:

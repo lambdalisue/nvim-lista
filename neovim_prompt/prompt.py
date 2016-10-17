@@ -1,22 +1,14 @@
 """Prompt module."""
 import re
 import copy
+from typing import Optional, Union, Tuple
+from neovim import Nvim
 from .key import Key
 from .keystroke import Keystroke
+from .context import Context
 
-
-# Type annotation
-try:
-    from typing import cast
-    from typing import Optional, Union, Tuple  # noqa: F401
-    from neovim import Nvim  # noqa: F401
-    from .key import KeyCode  # noqa: F401
-    from .context import Context  # noqa: F401
-    from .action import Action  # noqa: F401
-    KeystrokeType = Tuple[Key, ...]     # noqa: F401
-    KeystrokeExpr = Union[KeystrokeType, bytes, str]    # noqa: F401
-except ImportError:
-    cast = lambda t, x: x   # noqa: E731
+KeystrokeType = Tuple[Key, ...]     # noqa: F401
+KeystrokeExpr = Union[KeystrokeType, bytes, str]    # noqa: F401
 
 
 ACTION_KEYSTROKE_PATTERN = re.compile(r'<(\w+:\w+)>')
@@ -36,9 +28,11 @@ MODE_REPLACE = 'replace'
 
 class Prompt:
     """Prompt class."""
+
     prefix = '# '
 
-    def __init__(self, nvim: 'Nvim', context: 'Context') -> None:
+    def __init__(self, nvim: Nvim, context: Context) -> None:
+        """Constructor."""
         from .caret import Caret
         from .history import History
         from .keymap import DEFAULT_KEYMAP_RULES, Keymap
@@ -48,7 +42,7 @@ class Prompt:
         self.context = context
         self.caret = Caret(context)
         self.history = History(self)
-        self.action = copy.copy(DEFAULT_ACTION)    # type: ignore
+        self.action = copy.copy(DEFAULT_ACTION)
         self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
         # Apply custom keymapping
         if 'prompt#custom_mappings' in nvim.vars:
@@ -103,7 +97,7 @@ class Prompt:
             keystroke = self.keymap.resolve(previous)
         return keystroke
 
-    def start(self, default: str=None) -> 'Optional[str]':
+    def start(self, default: str=None) -> Optional[str]:
         if self.on_init(default):
             return None
         status = None   # Optional[int]
@@ -122,7 +116,7 @@ class Prompt:
         result = None if status == -1 else self.text
         return self.on_term(status, result) or result
 
-    def on_init(self, default):
+    def on_init(self, default: str) -> Optional[int]:
         self.nvim.call('inputsave')
         if default:
             self.text = default

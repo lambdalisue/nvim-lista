@@ -1,11 +1,9 @@
-# Type annotation
-try:
-    from typing import Callable, Optional, Dict, Tuple, Sequence  # noqa: F401
-    from .prompt import Prompt  # noqa: F401
-    ActionCallback = Callable[[Prompt], Optional[int]]  # noqa: F401
-    ActionRules = Sequence[Tuple[str, ActionCallback]]  # noqa: F401
-except ImportError:
-    pass
+"""Action module."""
+from typing import Callable, Optional, Dict, Tuple, Sequence    # noqa: F401
+from .prompt import Prompt
+
+ActionCallback = Callable[[Prompt], Optional[int]]
+ActionRules = Sequence[Tuple[str, ActionCallback]]
 
 
 class Action:
@@ -18,10 +16,10 @@ class Action:
     __slots__ = ('registry',)
 
     def __init__(self) -> None:
-        """Constructor"""
+        """Constructor."""
         self.registry = {}  # type: Dict[str, ActionCallback]
 
-    def register(self, name: str, callback: 'ActionCallback'=None) -> None:
+    def register(self, name: str, callback: ActionCallback=None) -> None:
         """Register action callback to a specified name.
 
         Args:
@@ -31,7 +29,7 @@ class Action:
         """
         self.registry[name] = callback
 
-    def register_from_rules(self, rules: 'ActionRules') -> None:
+    def register_from_rules(self, rules: ActionRules) -> None:
         """Register action callbacks from rules.
 
         Args:
@@ -41,7 +39,7 @@ class Action:
         for rule in rules:
             self.register(*rule)
 
-    def call(self, prompt: 'Prompt', name: str) -> 'Optional[int]':
+    def call(self, prompt: Prompt, name: str) -> Optional[int]:
         """Call a callback of specified action.
 
         Args:
@@ -59,7 +57,7 @@ class Action:
         return fn(prompt)
 
     @classmethod
-    def from_rules(cls, rules: 'ActionRules') -> 'Action':
+    def from_rules(cls, rules: ActionRules) -> 'Action':
         """Create a new action instance from rules.
 
         Args:

@@ -72,8 +72,8 @@ def test_Keystroke_harvest(nvim):
     with patch('neovim_prompt.keystroke.datetime') as m1:
         def side_effect(*args):
             yield ord('a')
-            yield ord('\x08')       # ^H
-            yield list(b'\x80kI')   # Insert
+            yield ord('\x08')   # ^H
+            yield '\udc80kI'    # Insert
             m1.now.return_value += timedelta(milliseconds=1000)
             yield ord('b')
             m1.now.return_value += timedelta(milliseconds=1001)

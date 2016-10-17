@@ -1,20 +1,12 @@
 """Keymap."""
-from .keystroke import Keystroke
+from .keystroke import Keystroke, KeystrokeExpr
+from typing import cast, Iterator, Optional, Sequence, Tuple, Union
+from neovim import Nvim
 
-# Type annotation
-try:
-    from typing import cast
-    from typing import (  # noqa: F401
-        Iterator, Optional, Sequence, Tuple, Union
-    )
-    from neovim import Nvim  # noqa: F401
-    from .keystroke import KeystrokeExpr
-    Rule = Union[
-        Tuple[KeystrokeExpr, KeystrokeExpr],
-        Tuple[KeystrokeExpr, KeystrokeExpr, bool],
-    ]
-except ImportError:
-    cast = lambda t, x: x   # noqa: E731
+Rule = Union[
+    Tuple[KeystrokeExpr, KeystrokeExpr],
+    Tuple[KeystrokeExpr, KeystrokeExpr, bool],
+]
 
 
 class Keymap:
@@ -33,7 +25,7 @@ class Keymap:
         """Register."""
         self.registry[lhs] = (lhs, rhs, noremap)
 
-    def register_from_rule(self, nvim: 'Nvim', rule: 'Rule') -> None:
+    def register_from_rule(self, nvim: Nvim, rule: Rule) -> None:
         """Register."""
         if len(rule) == 2:
             lhs, rhs = cast('Tuple[KeystrokeExpr, KeystrokeExpr]', rule)
@@ -48,12 +40,13 @@ class Keymap:
         self.register(lhs, rhs, noremap)
 
     def register_from_rules(self,
-                            nvim: 'Nvim',
-                            rules: 'Sequence[Rule]') -> None:
+                            nvim: Nvim,
+                            rules: Sequence[Rule]) -> None:
+        """Register keymaps from rule tuple."""
         for rule in rules:
             self.register_from_rule(nvim, rule)
 
-    def filter(self, lhs: Keystroke) -> 'Iterator[Keystroke]':
+    def filter(self, lhs: Keystroke) -> Iterator[Keystroke]:
         """Filter."""
         candidates = (
             self.registry[k]
@@ -61,7 +54,7 @@ class Keymap:
         )
         return cast('Iterator[Keystroke]', sorted(candidates))
 
-    def resolve(self, lhs: Keystroke) -> 'Optional[Keystroke]':
+    def resolve(self, lhs: Keystroke) -> Optional[Keystroke]:
         """Resolve."""
         candidates = list(self.filter(lhs))
         n = len(candidates)
@@ -74,7 +67,7 @@ class Keymap:
         return None
 
     @classmethod
-    def from_rules(cls, nvim: 'Nvim', rules: 'Sequence[Rule]') -> 'Keymap':
+    def from_rules(cls, nvim: Nvim, rules: Sequence[Rule]) -> 'Keymap':
         """Create keymap from rule."""
         keymap = cls()
         keymap.register_from_rules(nvim, rules)
