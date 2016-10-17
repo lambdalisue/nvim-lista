@@ -88,6 +88,20 @@ class Key(KeyBase):
     __slots__ = ()  # type: Tuple[str, ...]
     __cached = {}   # type: Dict[KeyExpr, Key]
 
+    def __str__(self) -> str:
+        return self.char
+
+    def __repr__(self) -> str:
+        if isinstance(self.code, bytes) and self.code.startswith('\x80'):
+            if self.code.startswith(CTRL_KEY):
+                pass
+            elif self.code.startswith(META_KEY):
+                pass
+            elif self.code in SPECIAL_KEYS_SWAP:
+                pass
+            pass
+        return self.char
+
     @classmethod
     def parse(cls, nvim: Nvim, expr: KeyExpr) -> 'Key':
         """Parse a key expression and return a Key instance.
