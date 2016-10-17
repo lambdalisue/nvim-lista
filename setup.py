@@ -19,6 +19,14 @@ def readlist(filename):
     rows = [x.strip() for x in rows if x.strip()]
     return list(rows)
 
+
+install_requires = readlist('requirements.txt')
+if sys.version_info < (3, 5):
+    install_requires += [
+        'typing',
+        'enum34',
+    ]
+
 setup(
     name=NAME,
     version=VERSION,
@@ -55,7 +63,7 @@ setup(
              'requirements-docs.txt'],
     },
     zip_safe=True,
-    install_requires=readlist('requirements.txt'),
+    install_requires=install_requires,
     test_suite='test',
     tests_require=readlist('requirements-test.txt'),
 )
