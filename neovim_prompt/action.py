@@ -114,6 +114,11 @@ def _delete_text_after_caret(prompt):
     prompt.caret.locus = prompt.caret.tail
 
 
+def _delete_entire_text(prompt):
+    prompt.context.text = ''
+    prompt.caret.locus = prompt.caret.tail
+
+
 def _move_caret_to_left(prompt):
     prompt.caret.locus -= 1
 
@@ -179,6 +184,7 @@ DEFAULT_ACTION = Action.from_rules([
     ('prompt:delete_char_before_caret', _delete_char_before_caret),
     ('prompt:delete_char_under_caret', _delete_char_under_caret),
     ('prompt:delete_text_after_caret', _delete_text_after_caret),
+    ('prompt:delete_entire_text', _delete_entire_text),
     ('prompt:move_caret_to_left', _move_caret_to_left),
     ('prompt:move_caret_to_right', _move_caret_to_right),
     ('prompt:move_caret_to_head', _move_caret_to_head),

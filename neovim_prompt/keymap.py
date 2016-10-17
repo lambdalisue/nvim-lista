@@ -80,6 +80,7 @@ DEFAULT_KEYMAP_RULES = (
     ('<INSERT>', '<prompt:toggle_insert_mode>', True),
     ('<BS>', '<prompt:delete_char_before_caret>', True),
     ('<DEL>', '<prompt:delete_char_under_caret>', True),
+    ('<C-U>', '<prompt:delete_entire_text>', True),
     ('<Left>', '<prompt:move_caret_to_left>', True),
     ('<Right>', '<prompt:move_caret_to_right>', True),
     ('<Home>', '<prompt:move_caret_to_head>', True),
