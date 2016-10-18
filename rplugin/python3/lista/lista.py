@@ -28,10 +28,12 @@ class Lista(Prompt):
             ('<PageDown>', '<lista:select_next_candidate>', 1),
             ('<C-^>', '<lista:switch_matcher>', 1),
             ('<C-I>', '<lista:switch_ignorecase>', 1),
-            ('<C-T>', '<PageUp>'),
-            ('<C-G>', '<PageDown>'),
-            ('<C-6>', '<C-^>'),
         ])
+        # Apply custom keymapping
+        if 'lista#custom_mappings' in nvim.vars:
+            custom_mappings = nvim.vars['lista#custom_mappings']
+            for rule in custom_mappings:
+                self.keymap.register_from_rule(nvim, rule)
 
     @property
     def case_mode(self):
@@ -92,6 +94,7 @@ class Lista(Prompt):
         return super().on_init(default)
 
     def on_redraw(self):
+
         self.nvim.current.window.options['statusline'] = self.statusline % (
             self.insert_mode_display.capitalize(),
             self.insert_mode_display.upper(),
