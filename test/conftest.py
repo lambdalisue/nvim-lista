@@ -18,11 +18,11 @@ def nvim():
 
 @pytest.fixture
 def context():
-    Context = MagicMock(spec='neovim_prompt.context.Context')
+    from neovim_prompt.context import Context
     return Context()
 
 
 @pytest.fixture
 def prompt(nvim, context):
-    Prompt = MagicMock(spec='neovim_prompt.prompt.Prompt')
+    from neovim_prompt.prompt import Prompt
     return Prompt(nvim, context)
