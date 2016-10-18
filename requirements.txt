@@ -1,2 +1,3 @@
 app_version
+neovim
 pytest-runner
