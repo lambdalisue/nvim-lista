@@ -8,8 +8,8 @@ python:
 install:
   - pip install --user -r requirements.txt
   - pip install --user -r requirements-test.txt
-  - [ "$TRAVIS_PYTHON_VERSION" == "3.3" ] && pip install --user enum34 typing
-  - [ "$TRAVIS_PYTHON_VERSION" == "3.4" ] && pip install --user typing
+  - if [ "$TRAVIS_PYTHON_VERSION" = "3.3" ]; then pip install --user enum34 typing fi
+  - if [ "$TRAVIS_PYTHON_VERSION" = "3.4" ]; then pip install --user typing fi
   - pip install --user coverage coveralls
 
 script:
