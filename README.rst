@@ -57,8 +57,8 @@ The prompt provides the following features
 - Custom prefix string
 - Custom events
     - ``on_init()`` - called before the loop
-    - ``on_redraw()`` - called to redraw statusline/commandline etc.
     - ``on_update()`` - called to update contents
+    - ``on_redraw()`` - called to redraw statusline/commandline etc.
     - ``on_keypress()`` - called to handle keys
     - ``on_term()`` - called after the loop
 
@@ -73,3 +73,9 @@ Use pip_ like::
     $ pip install neovim-prompt
 
 .. _pip:  https://pypi.python.org/pypi/pip
+
+
+Used by
+------------
+- [lambdalisue/prompt.nvim](https://github.com/lambdalisue/prompt.nvim)
+- [lambdalisue/lista.nvim](https://github.com/lambdalisue/lista.nvim)
