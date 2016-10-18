@@ -27,8 +27,8 @@ class Status(enum.Enum):
 
 
 class InsertMode(enum.Enum):
-    insert = 'insert'
-    replace = 'replace'
+    insert = 1
+    replace = 2
 
 
 class Prompt:
@@ -49,11 +49,6 @@ class Prompt:
         self.history = History(self)
         self.action = copy.copy(DEFAULT_ACTION)     # type: ignore
         self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
-        # Apply custom keymapping
-        if 'prompt#custom_mappings' in nvim.vars:
-            custom_mappings = nvim.vars['prompt#custom_mappings']
-            for rule in custom_mappings:
-                self.keymap.register_from_rule(nvim, rule)
 
     @property
     def text(self) -> str:
@@ -63,6 +58,18 @@ class Prompt:
     def text(self, value: str) -> None:
         self.context.text = value.replace("\n", " ")
         self.caret.locus = len(value)
+
+    def apply_custom_mappings_from_vim_variable(self, varname: str) -> None:
+        """Apply custom key mappings from Vim variable.
+
+        Args:
+            varname (str): A global Vim's variable name
+        """
+        if varname in self.nvim.vars:
+            custom_mappings = self.nvim.vars[varname]
+            for rule in custom_mappings:
+                self.keymap.register_from_rule(self.nvim, rule)
+
 
     def insert_text(self, text: str) -> None:
         locus = self.caret.locus
