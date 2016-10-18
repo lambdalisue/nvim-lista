@@ -3,6 +3,9 @@ from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 
 
+from typing import Optional
+
+
 class Lista(Prompt):
     statusline = ''.join([
         '%%#ListaStatuslineMode%s# %s ',
@@ -34,6 +37,14 @@ class Lista(Prompt):
             custom_mappings = nvim.vars['lista#custom_mappings']
             for rule in custom_mappings:
                 self.keymap.register_from_rule(nvim, rule)
+
+    def start(self, default: str) -> Optional[str]:
+        bufhidden = self.nvim.current.buffer.options['bufhidden']
+        self.nvim.current.buffer.options['bufhidden'] = 'hide'
+        try:
+            return super().start(default)
+        finally:
+            self.nvim.current.buffer.options['bufhidden'] = bufhidden
 
     @property
     def case_mode(self):
