@@ -1,5 +1,6 @@
 """Keystroke module."""
 import re
+import time
 from datetime import datetime, timedelta
 from typing import cast, Optional, Union, Tuple, Iterable
 from neovim import Nvim
@@ -48,7 +49,9 @@ class Keystroke(tuple):
                     milliseconds=int(nvim.options['timeoutlen']),
                 )
         key = Key.parse(nvim, getchar(nvim))
-        if previous is None or (timeout and timeout < datetime.now()):
+        if key is None:
+            keystroke = previous
+        elif previous is None or (timeout and timeout < datetime.now()):
             keystroke = Keystroke([key])
         else:
             keystroke = Keystroke(previous + (key,))
@@ -75,3 +78,12 @@ def _ensure_keys(nvim: Nvim, expr: KeystrokeExpr) -> KeystrokeType:
     else:
         keys = tuple(expr)
     return keys
+
+
+def _getchar(nvim: 'Nvim', timeout: Optional[datetime]) -> Optional[Key]:
+    while not timeout or timeout > datetime.now():
+        char = getchar(nvim, False)
+        if char != 0:
+            return char
+        time.sleep(0.01)
+    return None
