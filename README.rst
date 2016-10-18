@@ -77,5 +77,5 @@ Use pip_ like::
 
 Used by
 ------------
-- [lambdalisue/prompt.nvim](https://github.com/lambdalisue/prompt.nvim)
-- [lambdalisue/lista.nvim](https://github.com/lambdalisue/lista.nvim)
+- `lambdalisue/prompt.nvim <https://github.com/lambdalisue/prompt.nvim>`_
+- `lambdalisue/lista.nvim <https://github.com/lambdalisue/lista.nvim>`_
