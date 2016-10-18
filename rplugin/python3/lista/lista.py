@@ -1,4 +1,4 @@
-from neovim_prompt.prompt import Prompt
+from neovim_prompt.prompt import Prompt, InsertMode
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 
@@ -39,6 +39,13 @@ class Lista(Prompt):
             return 'Case-insensitive'
         else:
             return 'Case-sensitive'
+
+    @property
+    def insert_mode_display(self):
+        if self.insert_mode == InsertMode.insert:
+            return 'insert'
+        else:
+            return 'replace'
 
     def assign_content(self, content):
         viewinfo = self.nvim.call('winsaveview')
@@ -86,8 +93,8 @@ class Lista(Prompt):
 
     def on_redraw(self):
         self.nvim.current.window.options['statusline'] = self.statusline % (
-            self.mode.capitalize(),
-            self.mode.upper(),
+            self.insert_mode_display.capitalize(),
+            self.insert_mode_display.upper(),
             self.matcher.name,
             self.case_mode,
             len(self.context.selected_indices),
