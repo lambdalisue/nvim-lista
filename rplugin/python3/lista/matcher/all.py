@@ -20,14 +20,14 @@ class Matcher(AbstractMatcher):
         patterns = map(str.strip, query.split())
 
         if ignorecase:
-            patterns = list(map(str.lower, patterns))
-            indices[:] = [
+            _patterns = list(map(str.lower, patterns))
+            indices[:] = [  # type: ignore
                 i for i in indices
-                if all(p in candidates[i].lower() for p in patterns)
+                if all(p in candidates[i].lower() for p in _patterns)
             ]
         else:
-            patterns = list(patterns)
-            indices[:] = [
+            _patterns = list(patterns)
+            indices[:] = [  # type: ignore
                 i for i in indices
-                if all(p in candidates[i] for p in patterns)
+                if all(p in candidates[i] for p in _patterns)
             ]

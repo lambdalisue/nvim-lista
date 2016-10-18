@@ -1,10 +1,10 @@
-from typing import Sequence, TypeVar
+from typing import Sequence, TypeVar, Generic
 
 
 T = TypeVar('T')
 
 
-class Indexer:
+class Indexer(Generic[T]):
     """An indexer class."""
     def __init__(self, candidates: Sequence[T]) -> None:
         """Constructor.

@@ -22,6 +22,8 @@ class AbstractMatcher(metaclass=ABCMeta):
         nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
     """
 
+    name = 'abstract'
+
     def __init__(self, nvim: Nvim) -> None:
         """Constructor.
 

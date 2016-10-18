@@ -6,14 +6,14 @@ python:
   - 3.5
 
 install:
-  - pip install -r requirements.txt
-  - pip install -r requirements-test.txt
+  - pip install -r requirements.txt --upgrade
+  - pip install -r requirements-test.txt --upgrade
   - if [[ "$TRAVIS_PYTHON_VERSION" = "3.3" ]]; then pip install enum34 typing; fi
   - if [[ "$TRAVIS_PYTHON_VERSION" = "3.4" ]]; then pip install typing; fi
   - pip install coverage coveralls
 
 script:
-  - mypy .
+  - mypy rplugin/python3
   - py.test --cov
 
 after_success:

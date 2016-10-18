@@ -1,7 +1,9 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Sequence, Any  # noqa: F401
 from neovim import Nvim
+from neovim.api.buffer import Buffer  # noqa: F401
 from neovim_prompt.prompt import Prompt, Status
+from .matcher import AbstractMatcher  # noqa: F401
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 from .action import DEFAULT_ACTION_RULES, DEFAULT_ACTION_KEYMAP
@@ -33,14 +35,14 @@ class Lista(Prompt):
 
     def __init__(self, nvim: Nvim, context: Context) -> None:
         super().__init__(nvim, context)
-        self._buffer = None
-        self._indices = None
+        self._buffer = None  # type: Buffer
+        self._indices = None  # type: Sequence[int]
         self._previous = ''
         self.matcher = Indexer([
             AllMatcher(nvim),
             FuzzyMatcher(nvim),
         ])
-        self.case = Indexer(list(Case))
+        self.case = Indexer(list(Case))  # type: ignore
         self.action.register_from_rules(DEFAULT_ACTION_RULES)
         self.keymap.register_from_rules(nvim, DEFAULT_ACTION_KEYMAP)
         self.apply_custom_mappings_from_vim_variable('lista#custom_mappings')
