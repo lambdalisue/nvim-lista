@@ -39,7 +39,7 @@ class InsertMode(enum.Enum):
 class Prompt:
     """Prompt class."""
 
-    prefix = '# '
+    prefix = ''
 
     def __init__(self, nvim: Nvim, context: Context) -> None:
         """Constructor.
@@ -124,12 +124,12 @@ class Prompt:
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
             >>> context = Context()
-            >>> context.text = "Hello"
+            >>> context.text = "Hello Goodbye"
             >>> context.caret_locus = 3
             >>> prompt = Prompt(nvim, context)
-            >>> prompt.insert_text('Foo')
+            >>> prompt.insert_text('AA')
             >>> prompt.text
-            'HelFoolo'
+            'HelAAlo Goodbye'
         """
         locus = self.caret.locus
         self.text = ''.join([
@@ -152,18 +152,18 @@ class Prompt:
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
             >>> context = Context()
-            >>> context.text = "Hello"
+            >>> context.text = "Hello Goodbye"
             >>> context.caret_locus = 3
             >>> prompt = Prompt(nvim, context)
             >>> prompt.replace_text('AA')
             >>> prompt.text
-            'HelAAo'
+            'HelAA Goodbye'
         """
         locus = self.caret.locus
         self.text = ''.join([
             self.caret.get_backward_text(),
             text,
-            self.caret.get_forward_text(),
+            self.caret.get_forward_text()[len(text) - 1:],
         ])
         self.caret.locus = locus + len(text)
 
@@ -179,17 +179,17 @@ class Prompt:
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
             >>> context = Context()
-            >>> context.text = "Hello"
+            >>> context.text = "Hello Goodbye"
             >>> context.caret_locus = 3
             >>> prompt = Prompt(nvim, context)
             >>> prompt.insert_mode = InsertMode.insert
             >>> prompt.update_text('AA')
             >>> prompt.text
-            'HelAAlo'
+            'HelAAlo Goodbye'
             >>> prompt.insert_mode = InsertMode.replace
             >>> prompt.update_text('BB')
             >>> prompt.text
-            'HelAABBo'
+            'HelAABB Goodbye'
         """
         if self.insert_mode == InsertMode.insert:
             self.insert_text(text)
