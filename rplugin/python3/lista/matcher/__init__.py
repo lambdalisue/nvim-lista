@@ -1,3 +1,8 @@
+"""Matcher module."""
+from abc import ABCMeta, abstractmethod
+from typing import Sequence
+from neovim import Nvim
+
 ESCAPE_VIM_PATTERN_TABLE = str.maketrans({
     '^': '\\^',
     '$': '\\$',
@@ -10,39 +15,86 @@ ESCAPE_VIM_PATTERN_TABLE = str.maketrans({
 })
 
 
-class AbstractMatcher:
-    def __init__(self, nvim: 'Nvim') -> None:
+class AbstractMatcher(metaclass=ABCMeta):
+    """An abstract macher class.
+
+    Attributes:
+        nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+    """
+
+    def __init__(self, nvim: Nvim) -> None:
+        """Constructor.
+
+        Args:
+            nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+        """
         self.nvim = nvim
-        self.match_id = None    # type: int
+        self._match_id = None    # type: int
 
-    @property
-    def ignorecase(self):
-        return self.nvim.options['ignorecase']
+    def remove_highlight(self) -> None:
+        """Remove current highlight."""
+        if self._match_id:
+            self.nvim.call('matchdelete', self._match_id)
+            self._match_id = None
 
-    def highlight_pattern(self, query: str) -> str:
-        raise NotImplementedError
+    def highlight(self, query: str, ignorecase: bool) -> None:
+        """Highlight ``query``.
 
-    def highlight(self, query: str) -> None:
-        if self.match_id:
-            self.nvim.call('matchdelete', self.match_id)
-            self.match_id = None
+        Args:
+            query (str): A query string.
+            ignorecase (bool): Boolean to indicate ignorecase.
+        """
+        self.remove_highlight()
         if not query:
             return
-        pattern = self.highlight_pattern(query)
-        self.match_id = self.nvim.call(
+        pattern = self.get_highlight_pattern(query)
+        self._match_id = self.nvim.call(
             'matchadd',
             'Title',
-            ('\c' if self.ignorecase else '\C') + pattern,
+            ('\c' if ignorecase else '\C') + pattern,
             0,
         )
 
+    @abstractmethod
+    def get_highlight_pattern(self, query: str) -> str:
+        """Get highlight pattern for ``query``.
+
+        Args:
+            query (str): A query string.
+            ignorecase (bool): Boolean to indicate ignorecase.
+
+        Returns:
+            str: A pattern to highlight.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def filter(self,
                query: str,
-               indices: 'Sequence[int]',
-               candidates: 'Sequence[str]') -> 'Sequence[int]':
+               indices: Sequence[int],
+               candidates: Sequence[str],
+               ignorecase: bool) -> Sequence[int]:
+        """Filter candidates with query and return indices.
+
+        Args:
+            query (str): A query string.
+            indices (Sequence[int]): An index list available.
+            candidates (Sequence[str]): A candidate list.
+            ignorecase (bool): Boolean to indicate ignorecase.
+
+        Returns:
+            Sequence[int]: A filtered candidate indices.
+        """
         raise NotImplementedError
 
 
 def escape_vim_patterns(text: str) -> str:
-    """Escape patterh character used in Vim regex"""
+    """Escape patterh character used in Vim regex.
+
+    Args:
+        text (str): A text being escape.
+
+    Returns:
+        str: A escaped text.
+    """
     return text.translate(ESCAPE_VIM_PATTERN_TABLE)

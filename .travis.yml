@@ -1,31 +1,21 @@
-language: generic
 sudo: false
-env:
-  - VERSION=v7.4.2137
-  - VERSION=HEAD
-  - VERSION=nvim
-os:
-  - linux
-  - osx
-osx_image: xcode8
-
-addons:
-  apt:
-    packages:
-      - vim
-      - gettext
-      - libncurses5-dev
-      - libacl1-dev
-      - libgpm-dev
-      - libperl-dev
-      - ruby-dev
-      - python-dev
-      - python3-dev
-      - lua5.2
-      - liblua5.2-dev
+language: python
+python:
+  - 3.3
+  - 3.4
+  - 3.5
 
 install:
-  - bash .ci/install.sh
+  - pip install --user -r requirements.txt
+  - pip install --user -r requirements-test.txt
+  - [[ "$TRAVIS_PYTHON_VERSION" = "3.3" ]] && pip install --user enum34 typing
+  - [[ "$TRAVIS_PYTHON_VERSION" = "3.4" ]] && pip install --user typing
+  - pip install --user coverage coveralls
 
 script:
-  - bash .ci/script.sh
+  - mypy .
+  - py.test --cov
+
+after_success:
+  - coverage report
+  - coveralls

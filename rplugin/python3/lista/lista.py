@@ -1,184 +1,147 @@
-from neovim_prompt.prompt import Prompt, InsertMode
+from enum import Enum
+from typing import Optional
+from neovim import Nvim
+from neovim_prompt.prompt import Prompt, Status
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
+from .action import DEFAULT_ACTION_RULES, DEFAULT_ACTION_KEYMAP
+from .context import Context
+from .indexer import Indexer
+from .util import assign_content
 
 
-from typing import Optional
+class Case(Enum):
+    """Case enum class."""
+
+    smart = 1
+    ignore = 2
+    normal = 3
 
 
 class Lista(Prompt):
+    """Lista class."""
+
+    prefix = '# '
     statusline = ''.join([
         '%%#ListaStatuslineMode%s# %s ',
         '%%#ListaStatuslineFile# %%f ',
         '%%#ListaStatuslineMiddle#%%=',
         '%%#ListaStatuslineMatcher# Matcher: %s (C-^ to switch) ',
-        '%%#ListaStatuslineMatcher# %s (C-I to switch) ',
+        '%%#ListaStatuslineMatcher# Case: %s (C-I to switch) ',
         '%%#ListaStatuslineIndicator# %d/%d ',
     ])
 
-    def __init__(self, nvim: 'Nvim', context: 'Context') -> None:
+    def __init__(self, nvim: Nvim, context: Context) -> None:
         super().__init__(nvim, context)
-        self.matcher = AllMatcher(nvim)
+        self._buffer = None
+        self._indices = None
         self._previous = ''
-        self.action.register_from_rules([
-            ('lista:select_next_candidate', _select_next_candidate),
-            ('lista:select_previous_candidate', _select_previous_candidate),
-            ('lista:switch_matcher', _switch_matcher),
-            ('lista:switch_ignorecase', _switch_ignorecase),
+        self.matcher = Indexer([
+            AllMatcher(nvim),
+            FuzzyMatcher(nvim),
         ])
-        self.keymap.register_from_rules(nvim, [
-            ('<PageUp>', '<lista:select_previous_candidate>', 1),
-            ('<PageDown>', '<lista:select_next_candidate>', 1),
-            ('<C-^>', '<lista:switch_matcher>', 1),
-            ('<C-I>', '<lista:switch_ignorecase>', 1),
-        ])
-        # Apply custom keymapping
-        if 'lista#custom_mappings' in nvim.vars:
-            custom_mappings = nvim.vars['lista#custom_mappings']
-            for rule in custom_mappings:
-                self.keymap.register_from_rule(nvim, rule)
+        self.case = Indexer(list(Case))
+        self.action.register_from_rules(DEFAULT_ACTION_RULES)
+        self.keymap.register_from_rules(nvim, DEFAULT_ACTION_KEYMAP)
+        self.apply_custom_mappings_from_vim_variable('lista#custom_mappings')
 
-    def start(self, default: str) -> Optional[str]:
+    def start(self, default: str) -> int:
         bufhidden = self.nvim.current.buffer.options['bufhidden']
         self.nvim.current.buffer.options['bufhidden'] = 'hide'
         try:
-            return super().start(default)
+            return super().start(default) or 0
         finally:
             self.nvim.current.buffer.options['bufhidden'] = bufhidden
 
-    @property
-    def case_mode(self):
-        if self.nvim.options['ignorecase']:
-            return 'Case-insensitive'
-        else:
-            return 'Case-sensitive'
-
-    @property
-    def insert_mode_display(self):
-        if self.insert_mode == InsertMode.insert:
-            return 'insert'
-        else:
-            return 'replace'
-
-    def assign_content(self, content):
-        viewinfo = self.nvim.call('winsaveview')
-        self.nvim.current.buffer.options['modifiable'] = True
-        self.nvim.current.buffer[:] = content
-        self.nvim.current.buffer.options['modifiable'] = False
-        self.nvim.call('winrestview', viewinfo)
-
-    def switch_matcher(self):
-        self.matcher.highlight('')
-        if isinstance(self.matcher, AllMatcher):
-            self.matcher = FuzzyMatcher(self.nvim)
-        else:
-            self.matcher = AllMatcher(self.nvim)
+    def switch_matcher(self) -> None:
+        self.matcher.current.remove_highlight()
+        self.matcher.next()
         self._previous = ''
 
-    def switch_ignorecase(self):
-        if self.nvim.options['ignorecase']:
-            self.nvim.options['ignorecase'] = False
-        else:
-            self.nvim.options['ignorecase'] = True
+    def switch_case(self) -> None:
+        self.case.next()
         self._previous = ''
 
-    def on_init(self, default):
-        viewinfo = self.nvim.call('winsaveview')
-        self.context.content = self.nvim.current.buffer[:]
-        self.context.selected_line = 0
-        self.context.selected_indices = list(range(len(self.context.content)))
-        self.buffer = self.nvim.current.buffer
-        self.nvim.command('keepjumps enew')
-        self.nvim.current.buffer[:] = self.context.content
+    def get_ignorecase(self) -> bool:
+        if self.case.current is Case.ignore:
+            return True
+        elif self.case.current is Case.normal:
+            return False
+        elif self.case.current is Case.smart:
+            return not any(c.isupper() for c in self.text)
+
+    def on_init(self, default: str) -> Optional[Status]:
+        self._buffer = self.nvim.current.buffer
+        self._line_count = len(self._buffer[:])
+        self._indices = list(range(self._line_count))
+        self._bufhidden = self._buffer.options['bufhidden']
+        self._buffer.options['bufhidden'] = 'hide'
+        self.nvim.command('noautocmd keepjumps enew')
+        self.nvim.current.buffer[:] = self._buffer[:]
+        self.nvim.current.buffer.options['buftype'] = 'nofile'
         self.nvim.current.buffer.options['bufhidden'] = 'wipe'
-        self.nvim.current.buffer.options['readonly'] = False
-        self.nvim.current.buffer.options['readonly'] = False
-        self.nvim.current.buffer.options['modified'] = False
-        self.nvim.current.buffer.options['modifiable'] = False
+        self.nvim.current.buffer.options['buflisted'] = False
         self.nvim.current.window.options['spell'] = False
         self.nvim.current.window.options['foldenable'] = False
         self.nvim.current.window.options['colorcolumn'] = ''
         self.nvim.current.window.options['cursorline'] = True
         self.nvim.current.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
-        self.nvim.call('winrestview', viewinfo)
+        self.nvim.call('cursor', [self.context.selected_line, 0])
+        self.nvim.command('normal! zvzz')
         return super().on_init(default)
 
-    def on_redraw(self):
-
+    def on_redraw(self) -> None:
         self.nvim.current.window.options['statusline'] = self.statusline % (
-            self.insert_mode_display.capitalize(),
-            self.insert_mode_display.upper(),
-            self.matcher.name,
-            self.case_mode,
-            len(self.context.selected_indices),
-            len(self.context.content),
+            self.insert_mode.name.capitalize(),
+            self.insert_mode.name.upper(),
+            self.matcher.current.name,
+            self.case.current.name,
+            len(self._indices),
+            self._line_count,
         )
         self.nvim.command('redrawstatus')
         return super().on_redraw()
 
-    def on_update(self, status):
+    def on_update(self, status: Status) -> Optional[Status]:
         previous = self._previous
         self._previous = self.text
 
         if not previous or not self.text.startswith(previous):
-            self.context.selected_indices = list(
-                range(len(self.context.content))
-            )
-            if self.text:
+            self._indices = list(range(self._line_count))
+            if previous and self.text:
                 self.nvim.call(
                     'cursor',
                     [1, self.nvim.current.window.cursor[1]]
                 )
-        elif previous != self.text:
+        elif previous and previous != self.text:
             self.nvim.call('cursor', [1, self.nvim.current.window.cursor[1]])
 
-        self.matcher.highlight(self.text)
-        self.matcher.filter(
+        ignorecase = self.get_ignorecase()
+        self.matcher.current.highlight(self.text, ignorecase)
+        self.matcher.current.filter(
             self.text,
-            self.context.selected_indices,
-            self.context.content,
+            self._indices,
+            self._buffer[:],
+            ignorecase,
         )
-        self.assign_content([
-            self.context.content[i]
-            for i in self.context.selected_indices
-        ])
+        assign_content(self.nvim, [self._buffer[i] for i in self._indices])
         return super().on_update(status)
 
-    def on_term(self, status, result):
-        self.matcher.highlight('')
+    def on_term(self, status: Status, result: str) -> int:
+        self.matcher.current.remove_highlight()
         self.nvim.command('echo "%s" | redraw' % (
             "\n" * self.nvim.options['cmdheight']
         ))
         self.context.selected_line = self.nvim.current.window.cursor[0]
         self.nvim.current.buffer.options['modified'] = False
-        self.nvim.command('keepjumps %dbuffer' % self.buffer.number)
+        self.nvim.command('noautocmd keepjumps %dbuffer' % self._buffer.number)
         if result:
-            self.nvim.call(
-                'setreg', '/', self.matcher.highlight_pattern(result)
-            )
-            if (self.context.selected_line and
-                    len(self.context.selected_indices) > 0):
+            ignorecase = self.get_ignorecase()
+            caseprefix = '\c' if ignorecase else '\C'
+            pattern = self.matcher.current.get_highlight_pattern(result)
+            self.nvim.call('setreg', '/', caseprefix + pattern)
+            if self.context.selected_line and len(self._indices) > 0:
                 line = self.context.selected_line
-                index = self.context.selected_indices[line-1]
-                self.nvim.call('cursor', [index + 1, 0])
-                self.nvim.command('normal! zvzz')
-        return super().on_term(status, result)
-
-
-def _select_next_candidate(prompt):
-    line, col = prompt.nvim.current.window.cursor
-    prompt.nvim.call('cursor', [line + 1, col])
-
-
-def _select_previous_candidate(prompt):
-    line, col = prompt.nvim.current.window.cursor
-    prompt.nvim.call('cursor', [line - 1, col])
-
-
-def _switch_matcher(prompt):
-    prompt.switch_matcher()
-
-
-def _switch_ignorecase(prompt):
-    prompt.switch_ignorecase()
+                return self._indices[line - 1] + 1
+        return 0

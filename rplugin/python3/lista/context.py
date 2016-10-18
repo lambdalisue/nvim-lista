@@ -5,7 +5,9 @@ class Context(BaseContext):
     __slots__ = (
         'text',
         'caret_locus',
-        'content',
         'selected_line',
-        'selected_indices',
     )
+
+    def __init__(self):
+        super().__init__()
+        self.selected_line = 1

@@ -9,12 +9,9 @@ function! lista#rplugin#start(default) abort
 def _temporary_scope():
     import vim
     import rplugin
-    from lista.lista import Lista
-    from lista.context import Context
+    from lista import start
     nvim = rplugin.Neovim(vim)
-    context = Context()
-    lista = Lista(nvim, context)
-    lista.start(nvim.eval('a:default'))
+    start(nvim, [nvim.eval('a:default')])
 _temporary_scope()
 del _temporary_scope
 EOC
@@ -26,7 +23,6 @@ function! lista#rplugin#init() abort
     return s:supported
   endif
   try
-    call prompt#rplugin#init()
     let result = rplugin#init(s:rep, {
           \ 'python': 0,
           \ 'python3': has('python3'),
