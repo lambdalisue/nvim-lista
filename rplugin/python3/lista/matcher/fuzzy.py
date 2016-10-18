@@ -1,5 +1,5 @@
 import re
-from typing import Sequence, cast, Iterator, Pattern
+from typing import Sequence, cast, Iterator
 from . import AbstractMatcher, escape_vim_patterns
 
 
