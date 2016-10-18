@@ -1,5 +1,6 @@
 """Keymap."""
 import time
+from operator import itemgetter
 from datetime import datetime, timedelta
 from typing import cast, Iterator, Optional, Sequence, Tuple, Union
 from neovim import Nvim
@@ -10,6 +11,7 @@ from .util import getchar
 Rule = Union[
     Tuple[KeystrokeExpr, KeystrokeExpr],
     Tuple[KeystrokeExpr, KeystrokeExpr, bool],
+    Tuple[KeystrokeExpr, KeystrokeExpr, bool, bool],
 ]
 
 
@@ -25,23 +27,31 @@ class Keymap:
     def register(self,
                  lhs: Keystroke,
                  rhs: Keystroke,
-                 noremap: bool=False) -> None:
+                 noremap: bool=False,
+                 nowait: bool=False) -> None:
         """Register."""
-        self.registry[lhs] = (lhs, rhs, noremap)
+        self.registry[lhs] = (lhs, rhs, noremap, nowait)
 
     def register_from_rule(self, nvim: Nvim, rule: Rule) -> None:
         """Register."""
         if len(rule) == 2:
             lhs, rhs = cast('Tuple[KeystrokeExpr, KeystrokeExpr]', rule)
             noremap = False
-        else:
+            nowait = False
+        elif len(rule) == 3:
             lhs, rhs, noremap = cast(
                 'Tuple[KeystrokeExpr, KeystrokeExpr, bool]',
                 rule
             )
+            nowait = False
+        else:
+            lhs, rhs, noremap, nowait = cast(
+                'Tuple[KeystrokeExpr, KeystrokeExpr, bool, bool]',
+                rule
+            )
         lhs = Keystroke.parse(nvim, lhs)
         rhs = Keystroke.parse(nvim, rhs)
-        self.register(lhs, rhs, noremap)
+        self.register(lhs, rhs, noremap, nowait)
 
     def register_from_rules(self,
                             nvim: Nvim,
@@ -56,22 +66,33 @@ class Keymap:
             self.registry[k]
             for k in self.registry.keys() if k.startswith(lhs)
         )
-        return cast('Iterator[Keystroke]', sorted(candidates))
+        return cast(
+            'Iterator[Keystroke]',
+            sorted(candidates, key=itemgetter(0)),
+        )
 
-    def resolve(self, lhs: Keystroke, nowait: bool) -> Optional[Keystroke]:
+    def resolve(self,
+                lhs: Keystroke,
+                nowait: bool=False) -> Optional[Keystroke]:
         """Resolve."""
         candidates = list(self.filter(lhs))
         n = len(candidates)
         if n == 0:
             return lhs
         elif n == 1:
-            _lhs, rhs, noremap = candidates[0]
+            _lhs, rhs, noremap, _nowait = candidates[0]
             if lhs == _lhs:
-                return rhs if noremap else self.resolve(rhs, nowait)
+                return rhs if noremap else self.resolve(rhs, nowait=True)
         elif nowait:
-            _lhs, rhs, noremap = candidates[0]
+            # Use the first matched candidate if lhs is equal
+            _lhs, rhs, noremap, _nowait = candidates[0]
             if lhs == _lhs:
-                return rhs if noremap else self.resolve(rhs, nowait)
+                return rhs if noremap else self.resolve(rhs, nowait=True)
+        else:
+            # Check if the current first candidate is defined as nowait
+            _lhs, rhs, noremap, nowait = candidates[0]
+            if nowait and lhs == _lhs:
+                return rhs if noremap else self.resolve(rhs, nowait=True)
         return None
 
     def harvest(self, nvim: Nvim) -> Keystroke:
@@ -86,12 +107,15 @@ class Keymap:
         while True:
             code = _getcode(nvim, datetime.now() + timeoutlen)
             if code is None and previous is None:
+                # timeout without input
                 continue
             elif code is None:
+                # timeout
                 return self.resolve(previous, nowait=True) or previous
             previous = Keystroke((previous or ()) + (Key.parse(nvim, code),))
             keystroke = self.resolve(previous, nowait=False)
             if keystroke:
+                # resolved
                 return keystroke
 
     @classmethod

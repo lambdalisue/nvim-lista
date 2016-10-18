@@ -109,7 +109,6 @@ class Prompt:
         try:
             while self.on_update(status) is None:
                 self.on_redraw()
-                #rhs = self.resolve()
                 rhs = self.keymap.harvest(self.nvim)
                 status = self.on_keypress(rhs)
         except KeyboardInterrupt:

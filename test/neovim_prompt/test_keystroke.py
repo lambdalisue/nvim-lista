@@ -67,68 +67,6 @@ def test_Keystroke_parse_with_str(nvim):
     assert keys == tuple(expr)
 
 
-def test_Keystroke_harvest(nvim):
-    now = datetime.now()
-    with patch('neovim_prompt.keystroke.datetime') as m1:
-        def side_effect(*args):
-            yield ord('a')
-            yield ord('\x08')   # ^H
-            yield '\udc80kI'    # Insert
-            m1.now.return_value += timedelta(milliseconds=1000)
-            yield ord('b')
-            m1.now.return_value += timedelta(milliseconds=1001)
-            yield ord('c')
-        m1.now.return_value = now
-        nvim.call = MagicMock()
-        nvim.call.side_effect = side_effect()
-        nvim.options = {
-            'timeout': True,
-            'timeoutlen': 1000,
-        }
-
-        keys = None
-        timeout = None
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H>')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H><INS>')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H><INS>b')
-
-        # timeout
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'c')
-
-
-        nvim.call.side_effect = side_effect()
-        nvim.options = {
-            'timeout': False,
-            'timeoutlen': 1000,
-        }
-
-        keys = None
-        timeout = None
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H>')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H><INS>')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H><INS>b')
-
-        keys, timeout = Keystroke.harvest(nvim, keys, timeout)
-        assert keys == Keystroke.parse(nvim, b'a<C-H><INS>bc')
-
-
 def test_keystroke_startswith(nvim):
     rhs1 = Keystroke.parse(nvim, '<C-A>')
     rhs2 = Keystroke.parse(nvim, '<C-A><C-B>')
