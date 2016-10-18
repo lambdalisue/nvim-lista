@@ -74,21 +74,21 @@ class Action:
 
 # Default actions -------------------------------------------------------------
 def _accept(prompt):
-    from .prompt import STATUS_ACCEPT
-    return STATUS_ACCEPT
+    from .prompt import Status
+    return Status.accept
 
 
 def _cancel(prompt):
-    from .prompt import STATUS_CANCEL
-    return STATUS_CANCEL
+    from .prompt import Status
+    return Status.cancel
 
 
 def _toggle_insert_mode(prompt):
-    from .prompt import MODE_INSERT, MODE_REPLACE
-    if prompt.mode == MODE_INSERT:
-        prompt.mode = MODE_REPLACE
+    from .prompt import InsertMode
+    if prompt.insert_mode == InsertMode.insert:
+        prompt.insert_mode = InsertMode.replace
     else:
-        prompt.mode = MODE_INSERT
+        prompt.insert_mode = InsertMode.insert
 
 
 def _delete_char_before_caret(prompt):
