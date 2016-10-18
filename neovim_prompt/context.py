@@ -33,6 +33,16 @@ class Context:
         Use ``Context.from_dict(d)`` to restore a context instance from a
         dictionary.
 
+        Example:
+            >>> context = Context()
+            >>> context.text = 'Hello'
+            >>> context.caret_locus = 3
+            >>> d = context.to_dict()
+            >>> d['text']
+            'Hello'
+            >>> d['caret_locus']
+            3
+
         Returns:
             dict: A context dictionary.
 
@@ -50,6 +60,16 @@ class Context:
 
         Args:
             d (dict): A corresponding dictionary.
+
+        Example:
+            >>> context = Context.from_dict({
+            ...     'text': 'Hello',
+            ...     'caret_locus': 3,
+            ... })
+            >>> context.text
+            'Hello'
+            >>> context.caret_locus
+            3
 
         Returns:
             Context: A context instance.

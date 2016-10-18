@@ -11,7 +11,6 @@ class Caret:
 
     Attributes:
         context (Context): The ``prompt.context.Context`` instance.
-
     """
 
     __slots__ = ('context',)
@@ -21,7 +20,6 @@ class Caret:
 
         Args:
             context (Context): The ``prompt.context.Context`` instance.
-
         """
         self.context = context
 
@@ -31,6 +29,24 @@ class Caret:
 
         When a value is smaller than the ``head`` attribute or larger than the
         ``tail`` attribute, the value is regualted to ``head`` or ``tail``.
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> caret = Caret(context)
+            >>> caret.locus
+            0
+            >>> caret.locus = 3
+            >>> caret.locus
+            3
+            >>> caret.locus = -1
+            >>> caret.locus
+            0
+            >>> caret.locus = 100   # beyond text length
+            >>> caret.locus
+            5
+
         """
         return self.context.caret_locus
 
@@ -45,7 +61,17 @@ class Caret:
 
     @property
     def head(self) -> int:
-        """int: Readonly head locus index of the caret in the prompt."""
+        """int: Readonly head locus index of the caret in the prompt.
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> caret = Caret(context)
+            >>> caret.head
+            0
+
+        """
         return 0
 
     @property
@@ -68,7 +94,16 @@ class Caret:
 
     @property
     def tail(self) -> int:
-        """int: Readonly tail locus index of the caret in the prompt."""
+        """int: Readonly tail locus index of the caret in the prompt.
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> caret = Caret(context)
+            >>> caret.tail
+            5
+        """
         return len(self.context.text)
 
     def get_backward_text(self) -> str:

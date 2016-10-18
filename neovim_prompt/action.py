@@ -1,6 +1,6 @@
 """Action module."""
 from typing import Callable, Optional, Dict, Tuple, Sequence    # noqa: F401
-from .prompt import Prompt
+from .prompt import Prompt, Status
 
 ActionCallback = Callable[[Prompt], Optional[int]]
 ActionRules = Sequence[Tuple[str, ActionCallback]]
@@ -26,6 +26,11 @@ class Action:
             name (str): An action name which follow {namespace}:{action name}
             callback (Callable): An action callback which take a
                 ``prompt.prompt.Prompt`` instance and return None or int.
+
+        Example:
+            >>> from neovim_prompt.prompt import Status
+            >>> action = Action()
+            >>> action.register('prompt:accept', lambda prompt: Status.accept)
         """
         self.registry[name] = callback
 
@@ -35,19 +40,39 @@ class Action:
         Args:
             rules (Iterable): An iterator which returns rules. A rule is a
                 (name, callback) tuple.
+
+        Example:
+            >>> from neovim_prompt.prompt import Status
+            >>> action = Action()
+            >>> action.register_from_rules([
+            ...     ('prompt:accept', lambda prompt: Status.accept),
+            ...     ('prompt:cancel', lambda prompt: Status.cancel),
+            ... ])
         """
         for rule in rules:
             self.register(*rule)
 
-    def call(self, prompt: Prompt, name: str) -> Optional[int]:
+    def call(self, prompt: Prompt, name: str) -> Optional[Status]:
         """Call a callback of specified action.
 
         Args:
             prompt (Prompt): A ``prompt.prompt.Prompt`` instance.
             name (str): An action name.
 
+        Example:
+            >>> from unittest.mock import MagicMock
+            >>> from neovim_prompt.prompt import Status
+            >>> prompt = MagicMock()
+            >>> action = Action()
+            >>> action.register_from_rules([
+            ...     ('prompt:accept', lambda prompt: Status.accept),
+            ...     ('prompt:cancel', lambda prompt: Status.cancel),
+            ... ])
+            >>> action.call(prompt, 'prompt:accept')
+            <Status.accept: 1>
+
         Returns:
-            None or int: None or int which represent the prompt status.
+            None or Status: None or int which represent the prompt status.
         """
         if name not in self.registry:
             raise AttributeError(
@@ -63,6 +88,14 @@ class Action:
         Args:
             rules (Iterable): An iterator which returns rules. A rule is a
                 (name, callback) tuple.
+
+        Example:
+            >>> from neovim_prompt.prompt import Status
+            >>> Action.from_rules([
+            ...     ('prompt:accept', lambda prompt: Status.accept),
+            ...     ('prompt:cancel', lambda prompt: Status.cancel),
+            ... ])
+            <neovim_prompt.action.Action object at ...>
 
         Returns:
             Action: An action instance.

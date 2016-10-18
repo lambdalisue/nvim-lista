@@ -21,12 +21,17 @@ ESCAPE_ECHO = str.maketrans({
 
 
 class Status(enum.Enum):
+    """A prompt status enum class."""
+
+    progress = 0
     accept = 1
-    cancel = 0
-    error = -1
+    cancel = 2
+    error = 3
 
 
 class InsertMode(enum.Enum):
+    """A insert mode enum class."""
+
     insert = 1
     replace = 2
 
@@ -37,7 +42,12 @@ class Prompt:
     prefix = '# '
 
     def __init__(self, nvim: Nvim, context: Context) -> None:
-        """Constructor."""
+        """Constructor.
+
+        Args:
+            nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+            context (Context): A ``neovim_prompt.context.Context`` instance.
+        """
         from .caret import Caret
         from .history import History
         from .keymap import DEFAULT_KEYMAP_RULES, Keymap
@@ -52,6 +62,38 @@ class Prompt:
 
     @property
     def text(self) -> str:
+        """str: A current context text.
+
+        It automatically adjust the current caret locus to the tail of the text
+        if any text is assigned.
+
+        It calls the following overridable methods in order of the appearance.
+
+        - on_init - Only once
+        - on_update
+        - on_redraw
+        - on_keypress
+        - on_term - Only once
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> from unittest.mock import MagicMock
+            >>> nvim = MagicMock()
+            >>> nvim.options = {'encoding': 'utf-8'}
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> context.caret_locus = 3
+            >>> prompt = Prompt(nvim, context)
+            >>> prompt.text
+            'Hello'
+            >>> prompt.caret.locus
+            3
+            >>> prompt.text = "FooFooFoo"
+            >>> prompt.text
+            'FooFooFoo'
+            >>> prompt.caret.locus
+            9
+        """
         return self.context.text
 
     @text.setter
@@ -70,8 +112,25 @@ class Prompt:
             for rule in custom_mappings:
                 self.keymap.register_from_rule(self.nvim, rule)
 
-
     def insert_text(self, text: str) -> None:
+        """Insert text after the caret.
+
+        Args:
+            text (str): A text which will be inserted after the caret.
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> from unittest.mock import MagicMock
+            >>> nvim = MagicMock()
+            >>> nvim.options = {'encoding': 'utf-8'}
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> context.caret_locus = 3
+            >>> prompt = Prompt(nvim, context)
+            >>> prompt.insert_text('Foo')
+            >>> prompt.text
+            'HelFoolo'
+        """
         locus = self.caret.locus
         self.text = ''.join([
             self.caret.get_backward_text(),
@@ -82,6 +141,24 @@ class Prompt:
         self.caret.locus = locus + len(text)
 
     def replace_text(self, text: str) -> None:
+        """Replace text after the caret.
+
+        Args:
+            text (str): A text which will be replaced after the caret.
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> from unittest.mock import MagicMock
+            >>> nvim = MagicMock()
+            >>> nvim.options = {'encoding': 'utf-8'}
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> context.caret_locus = 3
+            >>> prompt = Prompt(nvim, context)
+            >>> prompt.replace_text('AA')
+            >>> prompt.text
+            'HelAAo'
+        """
         locus = self.caret.locus
         self.text = ''.join([
             self.caret.get_backward_text(),
@@ -91,33 +168,57 @@ class Prompt:
         self.caret.locus = locus + len(text)
 
     def update_text(self, text: str) -> None:
-        if self.insert_mode == InsertMode.replace:
+        """Insert or replace text after the caret.
+
+        Args:
+            text (str): A text which will be replaced after the caret.
+
+        Example:
+            >>> from neovim_prompt.context import Context
+            >>> from unittest.mock import MagicMock
+            >>> nvim = MagicMock()
+            >>> nvim.options = {'encoding': 'utf-8'}
+            >>> context = Context()
+            >>> context.text = "Hello"
+            >>> context.caret_locus = 3
+            >>> prompt = Prompt(nvim, context)
+            >>> prompt.insert_mode = InsertMode.insert
+            >>> prompt.update_text('AA')
+            >>> prompt.text
+            'HelAAlo'
+            >>> prompt.insert_mode = InsertMode.replace
+            >>> prompt.update_text('BB')
+            >>> prompt.text
+            'HelAABBo'
+        """
+        if self.insert_mode == InsertMode.insert:
             self.insert_text(text)
         else:
             self.replace_text(text)
 
-    def resolve(self) -> Keystroke:
-        timeout = None
-        previous = None
-        keystroke = None
-        while keystroke is None:
-            previous, timeout = Keystroke.harvest(
-                self.nvim,
-                previous,
-                timeout,
-            )
-            keystroke = self.keymap.resolve(previous)
-        return keystroke
-
     def start(self, default: str=None) -> Optional[str]:
-        if self.on_init(default):
-            return None
-        status = None   # Optional[int]
+        """Start prompt with ``default`` text and return value.
+
+        It starts prompt loop and return a input value when accepted. Otherwise
+        it returns None.
+
+        Args:
+            default (None or str): A default text of the prompt. If omitted, a
+                text in the context specified in the constructor is used.
+
+        Returns:
+            None or str: None if the prompt status is not Status.accept.
+                Otherwise a input value.
+        """
+        status = self.on_init(default) or Status.progress
         try:
-            while self.on_update(status) is None:
+            status = self.on_update(status) or Status.progress
+            while status is Status.progress:
                 self.on_redraw()
-                rhs = self.keymap.harvest(self.nvim)
-                status = self.on_keypress(rhs)
+                status = self.on_keypress(
+                    self.keymap.harvest(self.nvim)
+                ) or Status.progress
+                status = self.on_update(status) or Status.progress
         except KeyboardInterrupt:
             status = Status.cancel
         except self.nvim.error:
@@ -125,15 +226,53 @@ class Prompt:
         self.nvim.command('redraw!')
         if self.text:
             self.nvim.call('histadd', 'input', self.text)
-        result = self.text if status == Status.accept else None
+        result = self.text if status is Status.accept else None
         return self.on_term(status, result) or result
 
-    def on_init(self, default: str) -> Optional[int]:
+    def on_init(self, default: Optional[str]) -> Optional[Status]:
+        """Initialize the prompt.
+
+        It calls 'inputsave' function in Vim and assign ``default`` text to the
+        ``self.text`` to initialize the prompt text in default.
+
+        Args:
+            default (None or str): A default text of the prompt. If omitted, a
+                text in the context specified in the constructor is used.
+
+        Returns:
+            None or Status: The return value will be used as a status of the
+                prompt mainloop, indicating that if return value is not
+                Status.progress, the prompt mainloop immediately terminated.
+                Returning None is equal to returning Status.progress.
+        """
         self.nvim.call('inputsave')
         if default:
             self.text = default
 
+    def on_update(self, status: Optional[Status]) -> Status:
+        """Update the prompt status and return the status.
+
+        It is used to update the prompt status. In default, it does nothing and
+        return the specified ``status`` directly.
+
+        Args:
+            status (Status): A prompt status which is updated by previous
+                on_keypress call.
+
+        Returns:
+            None or Status: The return value will be used as a status of the
+                prompt mainloop, indicating that if return value is not
+                Status.progress, the prompt mainloop immediately terminated.
+                Returning None is equal to returning Status.progress.
+        """
+        return status
+
     def on_redraw(self) -> None:
+        """Redraw the prompt.
+
+        It is used to redraw the prompt. In default, it echos specified prefix
+        the caret, and input text.
+        """
         backward_text = self.caret.get_backward_text()
         selected_text = self.caret.get_selected_text()
         forward_text = self.caret.get_forward_text()
@@ -149,15 +288,44 @@ class Prompt:
             'echon "%s"' % forward_text.translate(ESCAPE_ECHO),
         ]))
 
-    def on_update(self, status: Status) -> Optional[Status]:
-        return status
+    def on_keypress(self, keystroke: Keystroke) -> Optional[Status]:
+        """Handle a pressed keystroke and return the status.
 
-    def on_keypress(self, keys: Keystroke) -> Optional[Status]:
-        m = ACTION_KEYSTROKE_PATTERN.match(str(keys))
+        It is used to handle a pressed keystroke. Note that subclass should NOT
+        override this method to perform actions. Register a new custom action
+        instead. In default, it call action and return the result if the
+        keystroke is <xxx:xxx>or call Vim function XXX and return the result
+        if the keystroke is <call:XXX>.
+
+        Args:
+            keystroke (Keystroke): A pressed keystroke instance. Note that this
+                instance is a reslved keystroke instace by keymap.
+
+        Returns:
+            None or Status: The return value will be used as a status of the
+                prompt mainloop, indicating that if return value is not
+                Status.progress, the prompt mainloop immediately terminated.
+                Returning None is equal to returning Status.progress.
+        """
+        m = ACTION_KEYSTROKE_PATTERN.match(str(keystroke))
         if m:
             return self.action.call(self, m.group(1))
         else:
-            self.update_text(str(keys))
+            self.update_text(str(keystroke))
 
     def on_term(self, status: Status, result: str) -> Optional[str]:
+        """Finalize the prompt.
+
+        It calls 'inputrestore' function in Vim to finalize the prompt in
+        default. The return value is used as a return value of the prompt if
+        non None is returned.
+
+        Args:
+            status (Status): A prompt status.
+            result (str): An input text.
+
+        Returns:
+            None or str: If a return value is not None, the value is used as a
+                return value of the prompt.
+        """
         self.nvim.call('inputrestore')

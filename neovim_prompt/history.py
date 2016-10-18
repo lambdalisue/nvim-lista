@@ -16,7 +16,6 @@ class History:
             prompt (Prompt): The ``prompt.prompt.Prompt`` instance. The
                 instance is used to initialize internal variables and never
                 stored.
-
         """
         self.prompt = weakref.proxy(prompt)
         self._index = 0
@@ -52,9 +51,6 @@ class History:
         points to 0.
         This behaviour is to mimic a Vim's builtin command-line history
         behaviour.
-
-        Args:
-            prompt (Prompt): An instance of ``prompt.prompt.Prompt``.
 
         Returns:
             str: A previous command-line history value of input.
@@ -94,9 +90,6 @@ class History:
         This behaviour is to mimic a Vim's builtin command-line history
         behaviour.
 
-        Args:
-            prompt (Prompt): An instance of ``prompt.prompt.Prompt``.
-
         Returns:
             str: A matched previous command-line history value of input.
         """
@@ -123,7 +116,7 @@ class History:
         behaviour.
 
         Returns:
-            str: A matched previous history value.
+            str: A matched next command-line history value of input.
         """
         if self._index == 0:
             return self._cached

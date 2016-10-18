@@ -1,7 +1,6 @@
 """Key module."""
 from curses import ascii  # type: ignore
-from collections import namedtuple
-from typing import cast, Union, Tuple, Dict     # noqa: F401
+from typing import cast, Union, Tuple, Dict, NamedTuple     # noqa: F401
 from neovim import Nvim
 from .util import ensure_bytes, ensure_str, int2chr
 
@@ -71,7 +70,10 @@ SPECIAL_KEYS.update(dict(
 ))
 
 
-KeyBase = namedtuple('KeyBase', ['code', 'char'])
+KeyBase = NamedTuple('KeyBase', [
+    ('code', KeyCode),
+    ('char', str),
+])
 
 
 class Key(KeyBase):
@@ -100,6 +102,15 @@ class Key(KeyBase):
 
         Args:
             expr (int, bytes, or str): A key expression.
+
+        Example:
+            >>> from unittest.mock import MagicMock
+            >>> nvim = MagicMock()
+            >>> nvim.options = {'encoding': 'utf-8'}
+            >>> Key.parse(nvim, ord('a'))
+            Key(code=97, char='a')
+            >>> Key.parse(nvim, '<Insert>')
+            Key(code=b'\x80kI', char='')
 
         Returns:
             Key: A Key instance.

@@ -25,7 +25,24 @@ def get_encoding(nvim: Nvim) -> str:
 
 
 def ensure_bytes(nvim: Nvim, seed: AnyStr) -> bytes:
-    """Encode `str` to `bytes` if necessary and return."""
+    """Encode `str` to `bytes` if necessary and return.
+
+    Args:
+        nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+        seed (AnyStr): A str or bytes instance.
+
+    Example:
+        >>> from unittest.mock import MagicMock
+        >>> nvim = MagicMock()
+        >>> nvim.options = {'encoding': 'utf-8'}
+        >>> ensure_bytes(nvim, b'a')
+        b'a'
+        >>> ensure_bytes(nvim, 'a')
+        b'a'
+
+    Returns:
+        bytes: A bytes represantation of ``seed``.
+    """
     if isinstance(seed, str):
         encoding = get_encoding(nvim)
         return seed.encode(encoding, 'surrogateescape')
@@ -33,7 +50,24 @@ def ensure_bytes(nvim: Nvim, seed: AnyStr) -> bytes:
 
 
 def ensure_str(nvim: Nvim, seed: AnyStr) -> str:
-    """Decode `bytes` to `str` if necessary and return."""
+    """Decode `bytes` to `str` if necessary and return.
+
+    Args:
+        nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+        seed (AnyStr): A str or bytes instance.
+
+    Example:
+        >>> from unittest.mock import MagicMock
+        >>> nvim = MagicMock()
+        >>> nvim.options = {'encoding': 'utf-8'}
+        >>> ensure_str(nvim, b'a')
+        'a'
+        >>> ensure_str(nvim, 'a')
+        'a'
+
+    Returns:
+        str: A str represantation of ``seed``.
+    """
     if isinstance(seed, bytes):
         encoding = get_encoding(nvim)
         return seed.decode(encoding, 'surrogateescape')
@@ -45,6 +79,20 @@ def int2chr(nvim: Nvim, code: int) -> str:
 
     It uses "nr2char()" in Vim script when 'encoding' option is not utf-8.
     Otherwise it uses "chr()" in Python to improve the performance.
+
+    Args:
+        nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+        code (int): A int which represent a single character.
+
+    Example:
+        >>> from unittest.mock import MagicMock
+        >>> nvim = MagicMock()
+        >>> nvim.options = {'encoding': 'utf-8'}
+        >>> int2chr(nvim, 97)
+        'a'
+
+    Returns:
+        str: A str of ``code``.
     """
     encoding = get_encoding(nvim)
     if encoding in ('utf-8', 'utf8'):
@@ -53,7 +101,15 @@ def int2chr(nvim: Nvim, code: int) -> str:
 
 
 def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
-    """Call getchar and return int or bytes instance."""
+    """Call getchar and return int or bytes instance.
+
+    Args:
+        nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+        *args: Arguments passed to getchar function in Vim.
+
+    Returns:
+        Union[int, bytes]: A int or bytes.
+    """
     ret = nvim.call('getchar', *args)
     if isinstance(ret, int):
         return ret

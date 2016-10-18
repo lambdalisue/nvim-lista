@@ -14,7 +14,7 @@ KEYS_PATTERN = re.compile(b'(?:<[^>]+>|\S)')
 
 
 class Keystroke(tuple):
-    """Keystroke class which indicate multiple keys pressed within timeout."""
+    """Keystroke class which indicate multiple keys."""
 
     __hash__ = tuple.__hash__
     __slots__ = ()  # type: Tuple[str, ...]
@@ -23,7 +23,14 @@ class Keystroke(tuple):
         return ''.join(str(k) for k in self)
 
     def startswith(self, other: 'Keystroke') -> bool:
-        """Startswith."""
+        """Check if the keystroke starts from ``other``.
+
+        Args:
+            other (Keystroke): A keystroke instance will be checked.
+
+        Returns:
+            bool: True if the keystroke starts from ``other``.
+        """
         if len(self) < len(other):
             return False
         return all(lhs == rhs for lhs, rhs in zip(self, other))
@@ -36,6 +43,15 @@ class Keystroke(tuple):
             nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
             expr (tuple, bytes, str): A keystroke expression.
 
+        Example:
+            >>> from unittest.mock import MagicMock
+            >>> nvim = MagicMock()
+            >>> nvim.options = {'encoding': 'utf-8'}
+            >>> Keystroke.parse(nvim, 'abc')
+            (Key(code=97, ...), Key(code=98, ...), Key(code=99, ...))
+            >>> Keystroke.parse(nvim, '<Insert>')
+            (Key(code=b'\x80kI', char=''),)
+
         Returns:
             Keystroke: A Keystroke instance.
         """
@@ -45,7 +61,6 @@ class Keystroke(tuple):
 
 
 def _ensure_keys(nvim: Nvim, expr: KeystrokeExpr) -> KeystrokeType:
-    """Ensure keys."""
     if isinstance(expr, (bytes, str)):
         expr_bytes = ensure_bytes(nvim, expr)   # type: ignore
         keys = tuple(
