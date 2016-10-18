@@ -153,7 +153,8 @@ def test_next_match_without_match(prompt):
     prompt.text = 'fool'
     prompt.caret.get_backward_text.return_value = 'Hello'
     history = History(prompt)
-    assert history.current() == 'fool'
+    [history.previous() for i in range(6)]
+    assert history.current() == 'foobarhoge'
 
-    assert history.next_match() == 'fool'
-    assert history.current() == 'fool'
+    assert history.next_match() == 'foobarhoge'
+    assert history.current() == 'foobarhoge'
