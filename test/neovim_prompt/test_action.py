@@ -41,6 +41,9 @@ def test_action_call(prompt):
     action.register('prompt:test', callback)
     assert action.call(prompt, 'prompt:test') == 'foo'
 
+    with pytest.raises(AttributeError):
+        action.call(prompt, 'prompt:not_a_registered_action')
+
 
 def test_Action_from_rules():
     callback = lambda prompt: None
@@ -80,6 +83,17 @@ def test_delete_char_before_caret(prompt, action):
     assert prompt.text == 'Hell Goodbye'
     assert prompt.caret.locus == 4
 
+    assert action.call(prompt, 'prompt:delete_char_before_caret') is None
+    assert action.call(prompt, 'prompt:delete_char_before_caret') is None
+    assert action.call(prompt, 'prompt:delete_char_before_caret') is None
+    assert action.call(prompt, 'prompt:delete_char_before_caret') is None
+    assert prompt.text == ' Goodbye'
+    assert prompt.caret.locus == 0
+
+    assert action.call(prompt, 'prompt:delete_char_before_caret') is None
+    assert prompt.text == ' Goodbye'
+    assert prompt.caret.locus == 0
+
 
 def test_delete_char_under_caret(prompt, action):
     prompt.text = 'Hello Goodbye'
@@ -103,6 +117,7 @@ def test_delete_entire_text(prompt, action):
     assert action.call(prompt, 'prompt:delete_entire_text') is None
     assert prompt.text == ''
     assert prompt.caret.locus == 0
+
 
 def test_move_caret_to_left(prompt, action):
     prompt.text = 'Hello Goodbye'

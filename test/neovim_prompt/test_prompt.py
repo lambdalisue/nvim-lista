@@ -82,6 +82,20 @@ def test_start(prompt):
     assert prompt.start() is None
 
 
+def test_start_exception(prompt):
+    nvim = prompt.nvim
+    nvim.error = Exception
+    nvim.call = MagicMock()
+    nvim.eval = MagicMock()
+    nvim.command = MagicMock()
+    prompt.keymap = MagicMock()
+    prompt.keymap.harvest.side_effect = KeyboardInterrupt
+    assert prompt.start() is None
+
+    prompt.keymap.harvest.side_effect = Exception
+    assert prompt.start() is None
+
+
 def test_on_init(prompt):
     prompt.nvim.call = MagicMock()
     prompt.text = 'Hello Goodbye'

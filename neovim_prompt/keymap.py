@@ -314,7 +314,10 @@ class Keymap:
 
         previous = None
         while True:
-            code = _getcode(nvim, datetime.now() + timeoutlen)
+            code = _getcode(
+                nvim,
+                datetime.now() + timeoutlen if timeoutlen else None
+            )
             if code is None and previous is None:
                 # timeout without input
                 continue

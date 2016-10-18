@@ -156,6 +156,11 @@ def test_Key_parse_with_bytes_str(nvim):
     assert Key.parse(nvim, expr).char == ''
 
 
+def test_Key_parse_with_invalid_type(nvim):
+    with pytest.raises(AttributeError):
+        Key.parse(nvim, nvim)
+
+
 def test_Key_parse_reify(nvim):
     assert Key.parse(nvim, 0) == Key.parse(nvim, 0)
     assert Key.parse(nvim, 0) != Key.parse(nvim, 1)

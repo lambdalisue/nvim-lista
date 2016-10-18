@@ -119,6 +119,16 @@ def test_previous_match(prompt):
     assert history.current() == 'foobarhoge'
 
 
+def test_previous_match_without_match(prompt):
+    prompt.text = 'fool'
+    prompt.caret.get_backward_text.return_value = 'Hello'
+    history = History(prompt)
+    assert history.current() == 'fool'
+
+    assert history.previous_match() == 'fool'
+    assert history.current() == 'fool'
+
+
 def test_next_match(prompt):
     prompt.text = 'fool'
     prompt.caret.get_backward_text.return_value = 'fo'
@@ -133,6 +143,16 @@ def test_next_match(prompt):
     assert history.current() == 'foo'
 
     assert history.next_match() == 'fool'
+    assert history.current() == 'fool'
+
+    assert history.next_match() == 'fool'
+    assert history.current() == 'fool'
+
+
+def test_next_match_without_match(prompt):
+    prompt.text = 'fool'
+    prompt.caret.get_backward_text.return_value = 'Hello'
+    history = History(prompt)
     assert history.current() == 'fool'
 
     assert history.next_match() == 'fool'

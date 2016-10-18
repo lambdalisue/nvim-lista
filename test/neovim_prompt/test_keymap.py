@@ -125,7 +125,7 @@ def test_keymap_resolve(nvim):
     assert keymap.resolve(Keystroke.parse(nvim, '<C-Y>')) is None
 
 
-def test_keymap_harvest(nvim):
+def test_keymap_harvest_timeout(nvim):
     nvim.options = {
         'timeout': True,
         'timeoutlen': 1000,
@@ -169,6 +169,73 @@ def test_keymap_harvest(nvim):
         keystroke = keymap.harvest(nvim)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CH>')
         assert nvim.call() == ord('\x08')   # residual
+
+        # Timeout without keypress
+        def side_effect(*args):
+            m1.now.return_value += timedelta(milliseconds=1000)
+            yield 0
+            yield ord('\x08')   # ^H
+            yield ord('\x08')   # ^H
+
+        m1.now.return_value = now
+        nvim.call.side_effect = side_effect()
+
+        keystroke = keymap.harvest(nvim)
+        assert keystroke == Keystroke.parse(nvim, '<prompt:CHCH>')
+        with pytest.raises(StopIteration):
+            nvim.call()
+
+        # Keypress within timeoutlen but with nowait
+        keymap.register_from_rules(nvim, [
+            ('<C-H>', '<prompt:CH>', True, True),
+            ('<C-H><C-H>', '<prompt:CHCH>', True),
+        ])
+        def side_effect(*args):
+            yield ord('\x08')   # ^H
+            m1.now.return_value += timedelta(milliseconds=999)
+            yield 0
+            yield ord('\x08')   # ^H
+
+        m1.now.return_value = now
+        nvim.call = MagicMock()
+        nvim.call.side_effect = side_effect()
+
+        keystroke = keymap.harvest(nvim)
+        assert keystroke == Keystroke.parse(nvim, '<prompt:CH>')
+        assert nvim.call() == 0   # residual
+        assert nvim.call() == ord('\x08')   # residual
+
+
+def test_keymap_harvest_notimeout(nvim):
+    nvim.options = {
+        'timeout': False,
+        'timeoutlen': 1000,
+        'encoding': 'utf-8',
+    }
+
+    now = datetime.now()
+    with patch('neovim_prompt.keymap.datetime') as m1:
+        keymap = Keymap()
+        keymap.register_from_rules(nvim, [
+            ('<C-H>', '<prompt:CH>', True),
+            ('<C-H><C-H>', '<prompt:CHCH>', True),
+        ])
+
+        # Keypress after timeoutlen
+        def side_effect(*args):
+            yield ord('\x08')   # ^H
+            m1.now.return_value += timedelta(milliseconds=1000)
+            yield 0
+            yield ord('\x08')   # ^H
+
+        m1.now.return_value = now
+        nvim.call = MagicMock()
+        nvim.call.side_effect = side_effect()
+
+        keystroke = keymap.harvest(nvim)
+        assert keystroke == Keystroke.parse(nvim, '<prompt:CHCH>')
+        with pytest.raises(StopIteration):
+            nvim.call()
 
         # Keypress within timeoutlen but with nowait
         keymap.register_from_rules(nvim, [
