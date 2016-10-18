@@ -75,6 +75,9 @@ class History:
         Returns:
             str: A next command-line history value of input.
         """
+        if self._index == 0:
+            self._cached = self.prompt.text
+            self._threshold = self.nvim.call('histnr', 'input')
         if self._index > 0:
             self._index -= 1
         return self.current()

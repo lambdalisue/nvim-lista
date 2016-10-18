@@ -1,6 +1,7 @@
 """Prompt module."""
 import re
 import copy
+import enum
 from typing import Optional, Union, Tuple
 from neovim import Nvim
 from .key import Key
@@ -18,12 +19,16 @@ ESCAPE_ECHO = str.maketrans({
     '\\': '\\\\',
 })
 
-STATUS_ACCEPT = 1
-STATUS_CANCEL = 0
-STATUS_ERROR = -1
 
-MODE_INSERT = 'insert'
-MODE_REPLACE = 'replace'
+class Status(enum.Enum):
+    accept = 1
+    cancel = 0
+    error = -1
+
+
+class InsertMode(enum.Enum):
+    insert = 'insert'
+    replace = 'replace'
 
 
 class Prompt:
@@ -38,11 +43,11 @@ class Prompt:
         from .keymap import DEFAULT_KEYMAP_RULES, Keymap
         from .action import DEFAULT_ACTION
         self.nvim = nvim
-        self.mode = MODE_INSERT
+        self.insert_mode = InsertMode.insert
         self.context = context
         self.caret = Caret(context)
         self.history = History(self)
-        self.action = copy.copy(DEFAULT_ACTION)
+        self.action = copy.copy(DEFAULT_ACTION)     # type: ignore
         self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
         # Apply custom keymapping
         if 'prompt#custom_mappings' in nvim.vars:
@@ -59,7 +64,7 @@ class Prompt:
         self.context.text = value.replace("\n", " ")
         self.caret.locus = len(value)
 
-    def insert_text(self, text):
+    def insert_text(self, text: str) -> None:
         locus = self.caret.locus
         self.text = ''.join([
             self.caret.get_backward_text(),
@@ -69,7 +74,7 @@ class Prompt:
         ])
         self.caret.locus = locus + len(text)
 
-    def replace_text(self, text):
+    def replace_text(self, text: str) -> None:
         locus = self.caret.locus
         self.text = ''.join([
             self.caret.get_backward_text(),
@@ -78,8 +83,8 @@ class Prompt:
         ])
         self.caret.locus = locus + len(text)
 
-    def update_text(self, text):
-        if self.mode == MODE_INSERT:
+    def update_text(self, text: str) -> None:
+        if self.insert_mode == InsertMode.replace:
             self.insert_text(text)
         else:
             self.replace_text(text)
@@ -107,13 +112,13 @@ class Prompt:
                 rhs = self.resolve()
                 status = self.on_keypress(rhs)
         except KeyboardInterrupt:
-            status = STATUS_CANCEL
+            status = Status.cancel
         except self.nvim.error:
-            status = STATUS_ERROR
+            status = Status.error
         self.nvim.command('redraw!')
         if self.text:
             self.nvim.call('histadd', 'input', self.text)
-        result = None if status == -1 else self.text
+        result = self.text if status == Status.accept else None
         return self.on_term(status, result) or result
 
     def on_init(self, default: str) -> Optional[int]:
@@ -121,7 +126,7 @@ class Prompt:
         if default:
             self.text = default
 
-    def on_redraw(self):
+    def on_redraw(self) -> None:
         backward_text = self.caret.get_backward_text()
         selected_text = self.caret.get_selected_text()
         forward_text = self.caret.get_forward_text()
@@ -137,15 +142,15 @@ class Prompt:
             'echon "%s"' % forward_text.translate(ESCAPE_ECHO),
         ]))
 
-    def on_update(self, status):
+    def on_update(self, status: Status) -> Optional[Status]:
         return status
 
-    def on_keypress(self, keys):
+    def on_keypress(self, keys: Keystroke) -> Optional[Status]:
         m = ACTION_KEYSTROKE_PATTERN.match(str(keys))
         if m:
             return self.action.call(self, m.group(1))
         else:
-            return self.update_text(str(keys))
+            self.update_text(str(keys))
 
-    def on_term(self, status, result):
+    def on_term(self, status: Status, result: str) -> Optional[str]:
         self.nvim.call('inputrestore')

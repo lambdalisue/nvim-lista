@@ -59,7 +59,6 @@ SPECIAL_KEYS.update(dict(
     PAGEUP=b'\x80kP',
     PAGEDOWN=b'\x80kN',
 ))
-SPECIAL_KEYS_SWAP = {v: k for k, v in SPECIAL_KEYS.items()}
 # Add aliases used in Vim. This requires to be AFTER making swap dictionary
 SPECIAL_KEYS.update(dict(
     NOP=SPECIAL_KEYS['NUL'],
@@ -126,6 +125,9 @@ class Key(KeyBase):
                 char = ''
             cls.__cached[expr] = cls(code, char)
         return cls.__cached[expr]
+
+    def __str__(self) -> str:
+        return self.char
 
 
 def _resolve(nvim: Nvim, expr: KeyExpr) -> KeyCode:

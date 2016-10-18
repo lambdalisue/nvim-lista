@@ -61,7 +61,7 @@ class Keystroke(tuple):
         return all(lhs == rhs for lhs, rhs in zip(self, other))
 
     def __str__(self) -> str:
-        return ''.join(k.char for k in self)
+        return ''.join(str(k) for k in self)
 
 
 def _ensure_keys(nvim: Nvim, expr: KeystrokeExpr) -> KeystrokeType:

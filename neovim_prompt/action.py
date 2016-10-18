@@ -74,21 +74,21 @@ class Action:
 
 # Default actions -------------------------------------------------------------
 def _accept(prompt):
-    from .prompt import STATUS_ACCEPT
-    return STATUS_ACCEPT
+    from .prompt import Status
+    return Status.accept
 
 
 def _cancel(prompt):
-    from .prompt import STATUS_CANCEL
-    return STATUS_CANCEL
+    from .prompt import Status
+    return Status.cancel
 
 
 def _toggle_insert_mode(prompt):
-    from .prompt import MODE_INSERT, MODE_REPLACE
-    if prompt.mode == MODE_INSERT:
-        prompt.mode = MODE_REPLACE
+    from .prompt import InsertMode
+    if prompt.insert_mode == InsertMode.insert:
+        prompt.insert_mode = InsertMode.replace
     else:
-        prompt.mode = MODE_INSERT
+        prompt.insert_mode = InsertMode.insert
 
 
 def _delete_char_before_caret(prompt):
@@ -111,6 +111,11 @@ def _delete_char_under_caret(prompt):
 
 def _delete_text_after_caret(prompt):
     prompt.context.text = prompt.caret.get_backward_text()
+    prompt.caret.locus = prompt.caret.tail
+
+
+def _delete_entire_text(prompt):
+    prompt.context.text = ''
     prompt.caret.locus = prompt.caret.tail
 
 
@@ -179,6 +184,7 @@ DEFAULT_ACTION = Action.from_rules([
     ('prompt:delete_char_before_caret', _delete_char_before_caret),
     ('prompt:delete_char_under_caret', _delete_char_under_caret),
     ('prompt:delete_text_after_caret', _delete_text_after_caret),
+    ('prompt:delete_entire_text', _delete_entire_text),
     ('prompt:move_caret_to_left', _move_caret_to_left),
     ('prompt:move_caret_to_right', _move_caret_to_right),
     ('prompt:move_caret_to_head', _move_caret_to_head),
