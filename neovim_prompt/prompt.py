@@ -197,19 +197,15 @@ class Prompt:
         else:
             self.replace_text(text)
 
-    def start(self, default: str=None) -> Optional[str]:
+    def start(self, default: str=None) -> Status:
         """Start prompt with ``default`` text and return value.
-
-        It starts prompt loop and return a input value when accepted. Otherwise
-        it returns None.
 
         Args:
             default (None or str): A default text of the prompt. If omitted, a
                 text in the context specified in the constructor is used.
 
         Returns:
-            None or str: None if the prompt status is not Status.accept.
-                Otherwise a input value.
+            Status: The status of the prompt.
         """
         status = self.on_init(default) or Status.progress
         if self.nvim.options['timeout']:
@@ -233,8 +229,7 @@ class Prompt:
         self.nvim.command('redraw!')
         if self.text:
             self.nvim.call('histadd', 'input', self.text)
-        result = self.text if status is Status.accept else None
-        return self.on_term(status, result) or result
+        return self.on_term(status)
 
     def on_init(self, default: Optional[str]) -> Optional[Status]:
         """Initialize the prompt.
@@ -320,19 +315,17 @@ class Prompt:
         else:
             self.update_text(str(keystroke))
 
-    def on_term(self, status: Status, result: str) -> Optional[str]:
+    def on_term(self, status: Status) -> Status:
         """Finalize the prompt.
 
         It calls 'inputrestore' function in Vim to finalize the prompt in
-        default. The return value is used as a return value of the prompt if
-        non None is returned.
+        default. The return value is used as a return value of the prompt.
 
         Args:
             status (Status): A prompt status.
-            result (str): An input text.
 
         Returns:
-            None or str: If a return value is not None, the value is used as a
-                return value of the prompt.
+            Status: A status which is used as a result value of the prompt.
         """
         self.nvim.call('inputrestore')
+        return status

@@ -131,6 +131,7 @@ def test_keymap_harvest_timeout(nvim):
         'timeoutlen': 1000,
         'encoding': 'utf-8',
     }
+    timeoutlen = timedelta(milliseconds=nvim.options['timeoutlen'])
 
     now = datetime.now()
     with patch('neovim_prompt.keymap.datetime') as m1:
@@ -151,7 +152,7 @@ def test_keymap_harvest_timeout(nvim):
         nvim.call = MagicMock()
         nvim.call.side_effect = side_effect()
 
-        keystroke = keymap.harvest(nvim)
+        keystroke = keymap.harvest(nvim, timeoutlen)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CHCH>')
         with pytest.raises(StopIteration):
             nvim.call()
@@ -166,7 +167,7 @@ def test_keymap_harvest_timeout(nvim):
         m1.now.return_value = now
         nvim.call.side_effect = side_effect()
 
-        keystroke = keymap.harvest(nvim)
+        keystroke = keymap.harvest(nvim, timeoutlen)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CH>')
         assert nvim.call() == ord('\x08')   # residual
 
@@ -180,7 +181,7 @@ def test_keymap_harvest_timeout(nvim):
         m1.now.return_value = now
         nvim.call.side_effect = side_effect()
 
-        keystroke = keymap.harvest(nvim)
+        keystroke = keymap.harvest(nvim, timeoutlen)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CHCH>')
         with pytest.raises(StopIteration):
             nvim.call()
@@ -200,7 +201,7 @@ def test_keymap_harvest_timeout(nvim):
         nvim.call = MagicMock()
         nvim.call.side_effect = side_effect()
 
-        keystroke = keymap.harvest(nvim)
+        keystroke = keymap.harvest(nvim, timeoutlen)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CH>')
         assert nvim.call() == 0   # residual
         assert nvim.call() == ord('\x08')   # residual
@@ -212,6 +213,7 @@ def test_keymap_harvest_notimeout(nvim):
         'timeoutlen': 1000,
         'encoding': 'utf-8',
     }
+    timeoutlen = None
 
     now = datetime.now()
     with patch('neovim_prompt.keymap.datetime') as m1:
@@ -232,7 +234,7 @@ def test_keymap_harvest_notimeout(nvim):
         nvim.call = MagicMock()
         nvim.call.side_effect = side_effect()
 
-        keystroke = keymap.harvest(nvim)
+        keystroke = keymap.harvest(nvim, timeoutlen)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CHCH>')
         with pytest.raises(StopIteration):
             nvim.call()
@@ -252,7 +254,7 @@ def test_keymap_harvest_notimeout(nvim):
         nvim.call = MagicMock()
         nvim.call.side_effect = side_effect()
 
-        keystroke = keymap.harvest(nvim)
+        keystroke = keymap.harvest(nvim, timeoutlen)
         assert keystroke == Keystroke.parse(nvim, '<prompt:CH>')
         assert nvim.call() == 0   # residual
         assert nvim.call() == ord('\x08')   # residual

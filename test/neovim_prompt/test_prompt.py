@@ -56,6 +56,10 @@ def test_start(prompt):
     nvim.call = MagicMock()
     nvim.eval = MagicMock()
     nvim.command = MagicMock()
+    nvim.options = {
+        'timeout': True,
+        'timeoutlen': 1000,
+    }
     prompt.keymap = MagicMock()
     prompt.keymap.harvest.side_effect = [
         Keystroke.parse(nvim, 'a'),
@@ -63,7 +67,8 @@ def test_start(prompt):
         Keystroke.parse(nvim, 'c'),
         Keystroke.parse(nvim, '<prompt:accept>'),
     ]
-    assert prompt.start() == 'abc'
+    assert prompt.start() is Status.accept
+    assert prompt.text == 'abc'
 
     prompt.keymap.harvest.side_effect = [
         Keystroke.parse(nvim, 'a'),
@@ -71,7 +76,8 @@ def test_start(prompt):
         Keystroke.parse(nvim, 'c'),
         Keystroke.parse(nvim, '<prompt:accept>'),
     ]
-    assert prompt.start('default') == 'defaultabc'
+    assert prompt.start('default') == Status.accept
+    assert prompt.text == 'defaultabc'
 
     prompt.keymap.harvest.side_effect = [
         Keystroke.parse(nvim, 'a'),
@@ -79,7 +85,7 @@ def test_start(prompt):
         Keystroke.parse(nvim, 'c'),
         Keystroke.parse(nvim, '<prompt:cancel>'),
     ]
-    assert prompt.start() is None
+    assert prompt.start() is Status.cancel
 
 
 def test_start_exception(prompt):
@@ -88,12 +94,16 @@ def test_start_exception(prompt):
     nvim.call = MagicMock()
     nvim.eval = MagicMock()
     nvim.command = MagicMock()
+    nvim.options = {
+        'timeout': True,
+        'timeoutlen': 1000,
+    }
     prompt.keymap = MagicMock()
     prompt.keymap.harvest.side_effect = KeyboardInterrupt
-    assert prompt.start() is None
+    assert prompt.start() is Status.cancel
 
     prompt.keymap.harvest.side_effect = Exception
-    assert prompt.start() is None
+    assert prompt.start() is Status.error
 
 
 def test_on_init(prompt):
@@ -148,5 +158,5 @@ def on_keypress(prompt):
 
 def test_on_term(prompt):
     prompt.nvim.call = MagicMock()
-    assert prompt.on_term(Status.accept, 'Hello Goodbye') == None
+    assert prompt.on_term(Status.accept) is Status.accept
     prompt.nvim.call.assert_called_with('inputrestore')
