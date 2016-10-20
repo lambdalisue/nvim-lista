@@ -33,6 +33,12 @@ class Lista(Prompt):
         '%%#ListaStatuslineIndicator# %d/%d ',
     ])
 
+    @property
+    def selected_line(self) -> int:
+        if self.context.selected_index >= 0:
+            return self._indices[self.context.selected_index] + 1
+        return 0
+
     def __init__(self, nvim: Nvim, context: Context) -> None:
         super().__init__(nvim, context)
         self._buffer = None  # type: Buffer
@@ -51,7 +57,7 @@ class Lista(Prompt):
         bufhidden = self.nvim.current.buffer.options['bufhidden']
         self.nvim.current.buffer.options['bufhidden'] = 'hide'
         try:
-            return super().start(default) or 0
+            return super().start(default)
         finally:
             self.nvim.current.buffer.options['bufhidden'] = bufhidden
 
@@ -89,7 +95,7 @@ class Lista(Prompt):
         self.nvim.current.window.options['cursorline'] = True
         self.nvim.current.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
-        self.nvim.call('cursor', [self.context.selected_line, 0])
+        self.nvim.call('cursor', [self.context.selected_index, 0])
         self.nvim.command('normal! zvzz')
         return super().on_init(default)
 
@@ -130,20 +136,17 @@ class Lista(Prompt):
         assign_content(self.nvim, [self._buffer[i] for i in self._indices])
         return super().on_update(status)
 
-    def on_term(self, status: Status, result: str) -> int:
+    def on_term(self, status: Status) -> Status:
         self.matcher.current.remove_highlight()
         self.nvim.command('echo "%s" | redraw' % (
             "\n" * self.nvim.options['cmdheight']
         ))
-        self.context.selected_line = self.nvim.current.window.cursor[0]
+        self.context.selected_index = self.nvim.current.window.cursor[0] - 1
         self.nvim.current.buffer.options['modified'] = False
         self.nvim.command('noautocmd keepjumps %dbuffer' % self._buffer.number)
-        if result:
+        if self.text:
             ignorecase = self.get_ignorecase()
             caseprefix = '\c' if ignorecase else '\C'
-            pattern = self.matcher.current.get_highlight_pattern(result)
+            pattern = self.matcher.current.get_highlight_pattern(self.text)
             self.nvim.call('setreg', '/', caseprefix + pattern)
-            if self.context.selected_line and len(self._indices) > 0:
-                line = self.context.selected_line
-                return self._indices[line - 1] + 1
-        return 0
+        return status

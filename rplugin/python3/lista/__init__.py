@@ -14,7 +14,7 @@ except ImportError:
 
 
 def start(nvim, args):
-    from .lista import Lista
+    from .lista import Lista, Status
     from .context import Context
     if '_lista_context' in nvim.current.buffer.vars:
         context = Context.from_dict(
@@ -22,10 +22,10 @@ def start(nvim, args):
         )
     else:
         context = Context()
-        context.selected_line = nvim.current.window.cursor[0]
+        context.selected_index = nvim.current.window.cursor[0] - 1
     lista = Lista(nvim, context)
-    linenum = lista.start(args[0])
-    if linenum > 0:
-        nvim.call('cursor', [linenum, 0])
+    status = lista.start(args[0])
+    if status == Status.accept:
+        nvim.call('cursor', [lista.selected_line, 0])
         nvim.command('normal! zvzz')
     nvim.current.buffer.vars['_lista_context'] = lista.context.to_dict()
