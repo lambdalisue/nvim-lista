@@ -2,6 +2,7 @@
 import re
 import copy
 import enum
+from datetime import timedelta
 from typing import Optional, Union, Tuple
 from neovim import Nvim
 from .key import Key
@@ -211,12 +212,18 @@ class Prompt:
                 Otherwise a input value.
         """
         status = self.on_init(default) or Status.progress
+        if self.nvim.options['timeout']:
+            timeoutlen = timedelta(
+                milliseconds=int(self.nvim.options['timeoutlen'])
+            )
+        else:
+            timeoutlen = None
         try:
             status = self.on_update(status) or Status.progress
             while status is Status.progress:
                 self.on_redraw()
                 status = self.on_keypress(
-                    self.keymap.harvest(self.nvim)
+                    self.keymap.harvest(self.nvim, timeoutlen)
                 ) or Status.progress
                 status = self.on_update(status) or Status.progress
         except KeyboardInterrupt:

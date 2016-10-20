@@ -1,7 +1,7 @@
 """Keymap."""
 import time
 from operator import itemgetter
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import cast, Iterator, Optional, Sequence, Tuple, Union
 from neovim import Nvim
 from .key import Key, KeyCode
@@ -285,7 +285,7 @@ class Keymap:
                 return rhs if noremap else self.resolve(rhs, nowait=True)
         return None
 
-    def harvest(self, nvim: Nvim) -> Keystroke:
+    def harvest(self, nvim: Nvim, timeoutlen: Optional[int]=None) -> Keystroke:
         """Harvest a keystroke from getchar in Vim and return resolved.
 
         It reads 'timeout' and 'timeoutlen' options in Vim and harvest a
@@ -305,13 +305,6 @@ class Keymap:
             Keystroke: A resolved keystroke.
 
         """
-        if nvim.options['timeout']:
-            timeoutlen = timedelta(
-                milliseconds=int(nvim.options['timeoutlen'])
-            )
-        else:
-            timeoutlen = None
-
         previous = None
         while True:
             code = _getcode(
