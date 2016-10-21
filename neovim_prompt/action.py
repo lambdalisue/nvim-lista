@@ -1,6 +1,9 @@
 """Action module."""
 from typing import Callable, Optional, Dict, Tuple, Sequence    # noqa: F401
 from .prompt import Prompt, Status
+from .context import Context
+from .util import safeget
+
 
 ActionCallback = Callable[[Prompt], Optional[int]]
 ActionRules = Sequence[Tuple[str, ActionCallback]]
@@ -74,12 +77,14 @@ class Action:
         Returns:
             None or Status: None or int which represent the prompt status.
         """
-        if name not in self.registry:
-            raise AttributeError(
-                'No action "%s" has registered.' % name
-            )
-        fn = self.registry[name]
-        return fn(prompt)
+        if name in self.registry:
+            fn = self.registry[name]
+            return fn(prompt)
+        elif name.startswith('call:'):
+            return _call(prompt, name[5:])
+        raise AttributeError(
+            'No action "%s" has registered.' % name
+        )
 
     @classmethod
     def from_rules(cls, rules: ActionRules) -> 'Action':
@@ -103,6 +108,25 @@ class Action:
         action = cls()
         action.register_from_rules(rules)
         return action
+
+
+# Special actions -------------------------------------------------------------
+def _call(prompt, fname):
+    result = prompt.nvim.call(fname, prompt.context.to_dict())
+    if result is None:
+        return Status.progress
+    elif isinstance(result, int):
+        return result
+    elif isinstance(result, dict):
+        prompt.context.extend(result)
+    elif isinstance(result, (list, tuple)):
+        status = safeget(result, 0, default=Status.progress)
+        prompt.context.extend(safeget(result, 1, default={}))
+        return status
+    else:
+        raise AttributeError(
+            "A function '%s' does not return a correct value." % fname
+        )
 
 
 # Default actions -------------------------------------------------------------

@@ -114,3 +114,11 @@ def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
     if isinstance(ret, int):
         return ret
     return ensure_bytes(nvim, ret)
+
+
+def safeget(l: list, index: int, default=None):
+    """Return an index item of list or default."""
+    try:
+        return l[index]
+    except IndexError:
+        return default
