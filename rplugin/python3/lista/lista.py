@@ -1,3 +1,4 @@
+import sys
 from enum import Enum
 from typing import Optional, Sequence, Any  # noqa: F401
 from neovim import Nvim
@@ -80,7 +81,8 @@ class Lista(Prompt):
 
     def on_init(self, default: str) -> Optional[Status]:
         self._buffer = self.nvim.current.buffer
-        self._line_count = len(self._buffer[:])
+        self._content = self._buffer[:]
+        self._line_count = len(self._content)
         self._indices = list(range(self._line_count))
         self._bufhidden = self._buffer.options['bufhidden']
         self._buffer.options['bufhidden'] = 'hide'
@@ -130,10 +132,10 @@ class Lista(Prompt):
         self.matcher.current.filter(
             self.text,
             self._indices,
-            self._buffer[:],
+            self._content[:],
             ignorecase,
         )
-        assign_content(self.nvim, [self._buffer[i] for i in self._indices])
+        assign_content(self.nvim, [self._content[i] for i in self._indices])
         return super().on_update(status)
 
     def on_term(self, status: Status) -> Status:
