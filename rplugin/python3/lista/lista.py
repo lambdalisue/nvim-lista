@@ -135,6 +135,10 @@ class Lista(Prompt):
             self._content[:],
             ignorecase,
         )
+        if len(self._indices) < 100:
+            self.matcher.current.highlight(self.text, ignorecase)
+        else:
+            self.matcher.current.remove_highlight()
         assign_content(self.nvim, [self._content[i] for i in self._indices])
         return super().on_update(status)
 
