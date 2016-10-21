@@ -6,14 +6,14 @@ T = TypeVar('T')
 
 class Indexer(Generic[T]):
     """An indexer class."""
-    def __init__(self, candidates: Sequence[T]) -> None:
+    def __init__(self, candidates: Sequence[T], index: int=0) -> None:
         """Constructor.
 
         Args:
             candidates (Sequence): A candidates.
         """
         self.candidates = candidates
-        self.index = 0
+        self.index = index
 
     @property
     def index(self):

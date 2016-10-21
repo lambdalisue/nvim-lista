@@ -45,11 +45,14 @@ class Lista(Prompt):
         self._buffer = None  # type: Buffer
         self._indices = None  # type: Sequence[int]
         self._previous = ''
-        self.matcher = Indexer([
-            AllMatcher(nvim),
-            FuzzyMatcher(nvim),
-        ])
-        self.case = Indexer(list(Case))  # type: ignore
+        self.matcher = Indexer(
+            [AllMatcher(nvim), FuzzyMatcher(nvim)],
+            index=context.matcher_index,
+        )
+        self.case = Indexer(  # type: ignore
+            list(Case),
+            index=context.case_index,
+        )
         self.action.register_from_rules(DEFAULT_ACTION_RULES)
         self.keymap.register_from_rules(nvim, DEFAULT_ACTION_KEYMAP)
         self.apply_custom_mappings_from_vim_variable('lista#custom_mappings')
@@ -128,7 +131,6 @@ class Lista(Prompt):
             self.nvim.call('cursor', [1, self.nvim.current.window.cursor[1]])
 
         ignorecase = self.get_ignorecase()
-        self.matcher.current.highlight(self.text, ignorecase)
         self.matcher.current.filter(
             self.text,
             self._indices,
@@ -148,6 +150,8 @@ class Lista(Prompt):
             "\n" * self.nvim.options['cmdheight']
         ))
         self.context.selected_index = self.nvim.current.window.cursor[0] - 1
+        self.context.matcher_index = self.matcher.index
+        self.context.case_index = self.case.index
         self.nvim.current.buffer.options['modified'] = False
         self.nvim.command('noautocmd keepjumps %dbuffer' % self._buffer.number)
         if self.text:
