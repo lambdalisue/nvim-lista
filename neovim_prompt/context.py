@@ -52,6 +52,37 @@ class Context:
             for k in self.__slots__
         }
 
+    def extend(self, d: dict) -> None:
+        """Extend a context instance from a dictionary.
+
+        Use ``context.to_dict()`` to create a corresponding dictionary.
+        Keys which is not in ``__slots__`` will be ignored.
+
+        Args:
+            d (dict): A dictionary.
+
+        Example:
+            >>> context = Context.from_dict({
+            ...     'text': 'Hello',
+            ...     'caret_locus': 3,
+            ... })
+            >>> context.text
+            'Hello'
+            >>> context.caret_locus
+            3
+            >>> context.extend({
+            ...     'text': 'Bye',
+            ...     'caret_locus': 1,
+            ... })
+            >>> context.text
+            'Bye'
+            >>> context.caret_locus
+            1
+        """
+        for k, v in d.items():
+            if k in self.__slots__:
+                setattr(self, k, v)
+
     @classmethod
     def from_dict(cls, d: dict) -> 'Context':
         """Create a new context instance from a dictionary.
@@ -75,7 +106,5 @@ class Context:
             Context: A context instance.
         """
         context = cls.__new__(cls)
-        for k, v in d.items():
-            if k in cls.__slots__:
-                setattr(context, k, v)
+        context.extend(d)
         return context
