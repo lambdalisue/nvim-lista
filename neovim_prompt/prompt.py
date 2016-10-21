@@ -224,7 +224,11 @@ class Prompt:
                 status = self.on_update(status) or Status.progress
         except KeyboardInterrupt:
             status = Status.cancel
-        except self.nvim.error:
+        except self.nvim.error as e:
+            self.nvim.command('|'.join([
+                'echoerr "%s"' % line.translate(ESCAPE_ECHO)
+                for line in str(e).splitlines()
+            ]))
             status = Status.error
         self.nvim.command('redraw!')
         if self.text:
