@@ -97,7 +97,7 @@ class Lista(Prompt):
         self.nvim.current.window.options['cursorline'] = True
         self.nvim.current.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
-        self.nvim.call('cursor', [self.context.selected_index, 0])
+        self.nvim.call('cursor', [self.context.selected_index+1, 0])
         self.nvim.command('normal! zvzz')
         return super().on_init(default)
 
