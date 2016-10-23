@@ -36,7 +36,7 @@ class Lista(Prompt):
 
     @property
     def selected_line(self) -> int:
-        if self.context.selected_index >= 0:
+        if len(self._indices) and self.context.selected_index >= 0:
             return self._indices[self.context.selected_index] + 1
         return 0
 
