@@ -9,7 +9,6 @@ ActionCallback = Callable[[Prompt], Optional[int]]
 ActionRules = Sequence[Tuple[str, ActionCallback]]
 
 
-
 class Action:
     """Action class which holds action callbacks.
 
