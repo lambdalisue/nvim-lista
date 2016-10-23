@@ -12,13 +12,26 @@ from .context import Context
 KeystrokeType = Tuple[Key, ...]     # noqa: F401
 KeystrokeExpr = Union[KeystrokeType, bytes, str]    # noqa: F401
 
-
 ACTION_KEYSTROKE_PATTERN = re.compile(r'<(\w+:\w+)>')
 
 ESCAPE_ECHO = str.maketrans({
     '"': '\\"',
     '\\': '\\\\',
 })
+
+IMPRINTABLE_REPRESENTS = {
+    '\a': '^G',
+    '\b': '^H',             # NOTE: Neovim: <BS>, Vim: ^H. Follow Vim.
+    '\t': '^I',
+    '\n': '^J',
+    '\v': '^K',
+    '\f': '^L',
+    '\r': '^M',
+    '\udc80\udcffX': '^@',  # NOTE: ^0 representation in Vim.
+}
+IMPRINTABLE_PATTERN = re.compile(r'(%s)' % '|'.join(
+    IMPRINTABLE_REPRESENTS.keys()
+))
 
 
 class Status(enum.Enum):
@@ -99,7 +112,7 @@ class Prompt:
 
     @text.setter
     def text(self, value: str) -> None:
-        self.context.text = value.replace("\n", " ")
+        self.context.text = value
         self.caret.locus = len(value)
 
     def apply_custom_mappings_from_vim_variable(self, varname: str) -> None:
@@ -197,6 +210,22 @@ class Prompt:
         else:
             self.replace_text(text)
 
+    def redraw_prompt(self) -> None:
+        # NOTE:
+        # There is a highlight name 'Cursor' but some sometime the visibility
+        # is quite low (e.g. tender) so use 'IncSearch' instead while the
+        # visibility is quite good and most recent colorscheme care about it.
+        backward_text = self.caret.get_backward_text()
+        selected_text = self.caret.get_selected_text()
+        forward_text = self.caret.get_forward_text()
+        self.nvim.command('|'.join([
+            'redraw',
+            _build_echon_expr('Question', self.prefix),
+            _build_echon_expr('None', backward_text),
+            _build_echon_expr('IncSearch', selected_text),
+            _build_echon_expr('None', forward_text),
+        ]))
+
     def start(self, default: str=None) -> Status:
         """Start prompt with ``default`` text and return value.
 
@@ -279,20 +308,7 @@ class Prompt:
         It is used to redraw the prompt. In default, it echos specified prefix
         the caret, and input text.
         """
-        backward_text = self.caret.get_backward_text()
-        selected_text = self.caret.get_selected_text()
-        forward_text = self.caret.get_forward_text()
-        self.nvim.command('|'.join([
-            'redraw',
-            'echohl Question',
-            'echon "%s"' % self.prefix.translate(ESCAPE_ECHO),
-            'echohl None',
-            'echon "%s"' % backward_text.translate(ESCAPE_ECHO),
-            'echohl Cursor',
-            'echon "%s"' % selected_text.translate(ESCAPE_ECHO),
-            'echohl None',
-            'echon "%s"' % forward_text.translate(ESCAPE_ECHO),
-        ]))
+        self.redraw_prompt()
 
     def on_keypress(self, keystroke: Keystroke) -> Optional[Status]:
         """Handle a pressed keystroke and return the status.
@@ -333,3 +349,16 @@ class Prompt:
         """
         self.nvim.call('inputrestore')
         return status
+
+
+def _build_echon_expr(hl: str, text: str) -> str:
+    if not IMPRINTABLE_PATTERN.search(text):
+        return 'echohl %s|echon "%s"' % (
+            hl, text.translate(ESCAPE_ECHO)
+        )
+    p = 'echohl %s|echon "%%s"' % hl
+    i = 'echohl %s|echon "%%s"' % ('SpecialKey' if hl == 'None' else hl)
+    return '|'.join(
+        p % term if index % 2 == 0 else i % IMPRINTABLE_REPRESENTS[term]
+        for index, term in enumerate(IMPRINTABLE_PATTERN.split(text))
+    )

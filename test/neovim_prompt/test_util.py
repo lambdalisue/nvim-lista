@@ -13,9 +13,9 @@ def test_ensure_str(nvim):
     assert isinstance(util.ensure_str(nvim, b'foo'), str)
 
 
-def test_int2chr(nvim):
-    assert util.int2chr(nvim, 97) == 'a'
-    assert util.int2chr(nvim, 12354) == 'あ'
+def test_int2char(nvim):
+    assert util.int2char(nvim, 97) == 'a'
+    assert util.int2char(nvim, 12354) == 'あ'
 
     with patch('neovim_prompt.util.get_encoding') as get_encoding:
         get_encoding.return_value = 'sjis'
@@ -27,10 +27,17 @@ def test_int2chr(nvim):
         nvim.call = MagicMock()
         nvim.call.side_effect = nr2char
         code = int.from_bytes(b'\x82\x60', byteorder='big')
-        assert util.int2chr(nvim, code) == 'Ａ'
+        assert util.int2char(nvim, code) == 'Ａ'
+
+
+def test_int2repr(nvim):
+    assert util.int2repr(nvim, 97) == 'a'
+    assert util.int2repr(nvim, 12354) == 'あ'
+    assert util.int2repr(nvim, b'\x80kb') == '<Backspace>'
 
 
 def test_getchar(nvim):
+    nvim.error = Exception
     nvim.call = MagicMock()
     nvim.call.return_value = 97
     assert util.getchar(nvim) == 97
@@ -40,3 +47,23 @@ def test_getchar(nvim):
 
     nvim.call.return_value = 'a'
     assert util.getchar(nvim) == b'a'
+
+    nvim.call.side_effect = Exception("b'Keyboard interrupt'")
+    assert util.getchar(nvim) == 0x03
+
+    nvim.call.side_effect = Exception
+    with pytest.raises(Exception):
+        util.getchar(nvim)
+
+
+def test_safeget():
+    assert util.safeget([], 10) is None
+    assert util.safeget([], 10, 'foo') == 'foo'
+
+
+def test_Singleton():
+
+    class Dummy(metaclass=util.Singleton):
+        pass
+
+    assert Dummy() is Dummy()

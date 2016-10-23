@@ -171,6 +171,12 @@ def test_Key_parse_reify(nvim):
     assert Key.parse(nvim, b'\x80kb') is Key.parse(nvim, b'\x80kb')
 
 
+def test_Key_represent(nvim):
+    assert Key.represent(nvim, ord('a')) == 'a'
+    assert Key.represent(nvim, b'\x80kb') == '<Backspace>'
+    assert Key.represent(nvim, b'\x80KK') == '\udc80KK'
+
+
 def test_Key_immutability(nvim):
     key = Key.parse(nvim, 0)
     # Changing attributes is not permitted

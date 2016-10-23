@@ -1,12 +1,13 @@
 """Action module."""
 from typing import Callable, Optional, Dict, Tuple, Sequence    # noqa: F401
 from .prompt import Prompt, Status
-from .context import Context
-from .util import safeget
+from .digraph import Digraph
+from .util import safeget, int2char, int2repr, getchar
 
 
 ActionCallback = Callable[[Prompt], Optional[int]]
 ActionRules = Sequence[Tuple[str, ActionCallback]]
+
 
 
 class Action:
@@ -213,8 +214,11 @@ def _assign_next_matched_text(prompt):
 
 
 def _paste_from_register(prompt):
-    prompt.nvim.command(r'echon "\""')
-    reg = prompt.nvim.eval('nr2char(getchar())')
+    context = prompt.context.to_dict()
+    prompt.update_text('"')
+    prompt.redraw_prompt()
+    reg = int2char(prompt.nvim, getchar(prompt.nvim))
+    prompt.context.extend(context)
     val = prompt.nvim.call('getreg', reg)
     prompt.update_text(val)
 
@@ -225,13 +229,39 @@ def _paste_from_default_register(prompt):
 
 
 def _yank_to_register(prompt):
-    prompt.nvim.command(r'echon "\""')
-    reg = prompt.nvim.eval('nr2char(getchar())')
+    context = prompt.context.to_dict()
+    prompt.update_text("'")
+    prompt.redraw_prompt()
+    reg = int2char(prompt.nvim, getchar(prompt.nvim))
+    prompt.context.extend(context)
     prompt.nvim.call('setreg', reg, prompt.text)
 
 
 def _yank_to_default_register(prompt):
     prompt.nvim.call('setreg', prompt.nvim.vvars['register'], prompt.text)
+
+
+def _insert_special(prompt):
+    context = prompt.context.to_dict()
+    prompt.update_text('^')
+    prompt.redraw_prompt()
+    code = getchar(prompt.nvim)
+    prompt.context.extend(context)
+    # Substitute special keys into control char
+    if code == b'\x80kb':
+        code = 0x08  # ^H
+    char = int2repr(prompt.nvim, code)
+    prompt.update_text(char)
+
+
+def _insert_digraph(prompt):
+    context = prompt.context.to_dict()
+    prompt.update_text('?')
+    prompt.redraw_prompt()
+    digraph = Digraph()
+    char = digraph.retrieve(prompt.nvim)
+    prompt.context.extend(context)
+    prompt.update_text(char)
 
 
 DEFAULT_ACTION = Action.from_rules([
@@ -255,4 +285,6 @@ DEFAULT_ACTION = Action.from_rules([
     ('prompt:paste_from_default_register', _paste_from_default_register),
     ('prompt:yank_to_register', _yank_to_register),
     ('prompt:yank_to_default_register', _yank_to_default_register),
+    ('prompt:insert_special', _insert_special),
+    ('prompt:insert_digraph', _insert_digraph),
 ])

@@ -265,11 +265,17 @@ def test_assign_next_matched_text(prompt, action):
 
 
 def test_paste_from_register(prompt, action):
+    def side_effect(fname, *args):
+        if fname == 'getchar':
+            return ord('a')
+        elif fname == 'getreg':
+            return '<%s>' % args[0]
+
+    prompt.nvim.error = Exception
     prompt.nvim.eval = MagicMock()
     prompt.nvim.call = MagicMock()
     prompt.nvim.command = MagicMock()
-    prompt.nvim.eval.return_value = 'a'
-    prompt.nvim.call.side_effect = lambda fname, reg: '<%s>' % reg
+    prompt.nvim.call.side_effect = side_effect
     prompt.text = 'Hello Goodbye'
     prompt.caret.locus = 5
     assert action.call(prompt, 'prompt:paste_from_register') is None
@@ -292,10 +298,14 @@ def test_paste_from_default_register(prompt, action):
 
 
 def test_yank_to_register(prompt, action):
+    def side_effect(fname, *args):
+        if fname == 'getchar':
+            return ord('a')
+
     prompt.nvim.eval = MagicMock()
     prompt.nvim.call = MagicMock()
     prompt.nvim.command = MagicMock()
-    prompt.nvim.eval.return_value = 'a'
+    prompt.nvim.call.side_effect = side_effect
     prompt.text = 'Hello Goodbye'
     prompt.caret.locus = 5
     assert action.call(prompt, 'prompt:yank_to_register') is None
@@ -316,3 +326,48 @@ def test_yank_to_default_register(prompt, action):
     assert prompt.text == 'Hello Goodbye'
     assert prompt.caret.locus == 5
     prompt.nvim.call.assert_called_with('setreg', '*', 'Hello Goodbye')
+
+
+def test_insert_special(prompt, action):
+    prompt.nvim.call = MagicMock()
+    prompt.nvim.call.return_value = ord('a')
+    prompt.nvim.command = MagicMock()
+    prompt.text = 'Hello Goodbye'
+    prompt.caret.locus = 5
+    assert action.call(prompt, 'prompt:insert_special') is None
+    assert prompt.text == 'Helloa Goodbye'
+    assert prompt.caret.locus == 6
+
+    prompt.nvim.call.return_value = 0x01
+    prompt.text = 'Hello Goodbye'
+    prompt.caret.locus = 5
+    assert action.call(prompt, 'prompt:insert_special') is None
+    assert prompt.text == 'Hello\x01 Goodbye'
+    assert prompt.caret.locus == 6
+
+    prompt.nvim.call.return_value = b'\x80kb'
+    prompt.text = 'Hello Goodbye'
+    prompt.caret.locus = 5
+    assert action.call(prompt, 'prompt:insert_special') is None
+    assert prompt.text == 'Hello\x08 Goodbye'
+    assert prompt.caret.locus == 6
+
+
+def test_insert_digraph(prompt, action):
+    from neovim_prompt.digraph import Digraph
+    # Make sure that digraph is cached
+    nvim = prompt.nvim
+    nvim.call = MagicMock()
+    nvim.call.return_value = 'aa A 00  bb B 01\ncc C 02  ad D 03'
+    Digraph().find(nvim, 'a', 'a')
+    # ---
+    prompt.nvim.call.side_effect = [
+        ord('a'),
+        ord('a'),
+    ]
+    prompt.nvim.command = MagicMock()
+    prompt.text = 'Hello Goodbye'
+    prompt.caret.locus = 5
+    assert action.call(prompt, 'prompt:insert_digraph') is None
+    assert prompt.text == 'HelloA Goodbye'
+    assert prompt.caret.locus == 6

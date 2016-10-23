@@ -74,7 +74,7 @@ def ensure_str(nvim: Nvim, seed: AnyStr) -> str:
     return seed
 
 
-def int2chr(nvim: Nvim, code: int) -> str:
+def int2char(nvim: Nvim, code: int) -> str:
     """Return a corresponding char of `code`.
 
     It uses "nr2char()" in Vim script when 'encoding' option is not utf-8.
@@ -88,7 +88,7 @@ def int2chr(nvim: Nvim, code: int) -> str:
         >>> from unittest.mock import MagicMock
         >>> nvim = MagicMock()
         >>> nvim.options = {'encoding': 'utf-8'}
-        >>> int2chr(nvim, 97)
+        >>> int2char(nvim, 97)
         'a'
 
     Returns:
@@ -98,6 +98,13 @@ def int2chr(nvim: Nvim, code: int) -> str:
     if encoding in ('utf-8', 'utf8'):
         return chr(code)
     return nvim.call('nr2char', code)
+
+
+def int2repr(nvim: Nvim, code: Union[int, bytes]) -> str:
+    from .key import Key
+    if isinstance(code, int):
+        return int2char(nvim, code)
+    return Key.represent(nvim, ensure_bytes(nvim, code))
 
 
 def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
@@ -110,10 +117,20 @@ def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
     Returns:
         Union[int, bytes]: A int or bytes.
     """
-    ret = nvim.call('getchar', *args)
-    if isinstance(ret, int):
-        return ret
-    return ensure_bytes(nvim, ret)
+    try:
+        ret = nvim.call('getchar', *args)
+        if isinstance(ret, int):
+            return ret
+        return ensure_bytes(nvim, ret)
+    except nvim.error as e:
+        # NOTE:
+        # Vim returns 0x03 when ^C is pressed but Neovim.
+        # Additionally, KeyboardInterrupt is not raised but
+        # A general nvim.error and only the following dirty
+        # implementation works.
+        if str(e) == "b'Keyboard interrupt'":
+            return 0x03  # ^C
+        raise e
 
 
 def safeget(l: list, index: int, default=None):
@@ -122,3 +139,15 @@ def safeget(l: list, index: int, default=None):
         return l[index]
     except IndexError:
         return default
+
+
+# http://python-3-patterns-idioms-test.readthedocs.io/en/latest/Metaprogramming.html
+class Singleton(type):
+    """A singleton metaclass."""
+
+    instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if not cls.instance:
+            cls.instance = super().__call__(*args, **kwargs)
+        return cls.instance

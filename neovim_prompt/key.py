@@ -2,7 +2,7 @@
 from curses import ascii  # type: ignore
 from typing import cast, Union, Tuple, Dict, NamedTuple     # noqa: F401
 from neovim import Nvim
-from .util import ensure_bytes, ensure_str, int2chr
+from .util import ensure_bytes, ensure_str, int2char
 
 
 KeyCode = Union[int, bytes]
@@ -58,6 +58,7 @@ SPECIAL_KEYS.update(dict(
     PAGEUP=b'\x80kP',
     PAGEDOWN=b'\x80kN',
 ))
+SPECIAL_KEYS_REVRESE = {v: k for k, v in SPECIAL_KEYS.items()}
 # Add aliases used in Vim. This requires to be AFTER making swap dictionary
 SPECIAL_KEYS.update(dict(
     NOP=SPECIAL_KEYS['NUL'],
@@ -93,6 +94,16 @@ class Key(KeyBase):
         return self.char
 
     @classmethod
+    def represent(cls, nvim: Nvim, code: KeyCode) -> str:
+        if isinstance(code, int):
+            return int2char(nvim, code)
+        if code in SPECIAL_KEYS_REVRESE:
+            char = SPECIAL_KEYS_REVRESE.get(code).capitalize()
+            return '<%s>' % char
+        else:
+            return ensure_str(nvim, code)
+
+    @classmethod
     def parse(cls, nvim: Nvim, expr: KeyExpr) -> 'Key':
         """Parse a key expression and return a Key instance.
 
@@ -118,7 +129,7 @@ class Key(KeyBase):
         if expr not in cls.__cached:
             code = _resolve(nvim, expr)
             if isinstance(code, int):
-                char = int2chr(nvim, code)
+                char = int2char(nvim, code)
             elif not code.startswith(b'\x80'):
                 char = ensure_str(nvim, code)
             else:

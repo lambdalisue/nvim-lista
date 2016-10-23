@@ -381,4 +381,6 @@ DEFAULT_KEYMAP_RULES = (
     ('<Up>', '<prompt:assign_previous_matched_text>', True),
     ('<Down>', '<prompt:assign_next_matched_text>', True),
     ('<C-R>', '<prompt:paste_from_register>', True),
+    ('<C-V>', '<prompt:insert_special>', True),
+    ('<C-K>', '<prompt:insert_digraph>', True),
 )

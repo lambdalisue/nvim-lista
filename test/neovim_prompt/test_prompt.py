@@ -50,6 +50,71 @@ def test_update_text(prompt):
     pass
 
 
+def test_redraw_prompt(prompt):
+    prompt.nvim.command = MagicMock()
+    prompt.prefix = '# '
+    prompt.text = 'Hello Goodbye'
+    prompt.caret.locus = 5
+    assert prompt.redraw_prompt() == None
+    prompt.nvim.command.assert_called_with('|'.join([
+        'redraw',
+        'echohl Question',
+        'echon "# "',
+        'echohl None',
+        'echon "Hello"',
+        'echohl IncSearch',
+        'echon " "',
+        'echohl None',
+        'echon "Goodbye"',
+    ]))
+
+
+def test_redraw_prompt_with_imprintable1(prompt):
+    prompt.nvim.command = MagicMock()
+    prompt.prefix = '# '
+    prompt.text = ''.join([
+        chr(0x01),
+        chr(0x02),
+        chr(0x03),
+        chr(0x04),
+        chr(0x05),
+        chr(0x06),
+        chr(0x07),  # ^G, \a
+        chr(0x08),  # ^H, \b
+        chr(0x09),  # ^I, \t
+        chr(0x0A),  # ^J, \n
+    ])
+    prompt.caret.locus = 5
+    assert prompt.redraw_prompt() == None
+    prompt.nvim.command.assert_called_with('|'.join([
+        'redraw',
+        'echohl Question',
+        'echon "# "',
+        'echohl None',
+        'echon "\x01\x02\x03\x04\x05"',
+        'echohl IncSearch',
+        'echon "\x06"',
+        'echohl None',
+        'echon ""',
+        'echohl SpecialKey',
+        'echon "^G"',
+        'echohl None',
+        'echon ""',
+        'echohl SpecialKey',
+        'echon "^H"',
+        'echohl None',
+        'echon ""',
+        'echohl SpecialKey',
+        'echon "^I"',
+        'echohl None',
+        'echon ""',
+        'echohl SpecialKey',
+        'echon "^J"',
+        'echohl None',
+        'echon ""',
+    ]))
+
+
 def test_start(prompt):
     nvim = prompt.nvim
     nvim.error = Exception
@@ -135,7 +200,7 @@ def test_on_redraw(prompt):
         'echon "# "',
         'echohl None',
         'echon "Hello"',
-        'echohl Cursor',
+        'echohl IncSearch',
         'echon " "',
         'echohl None',
         'echon "Goodbye"',
