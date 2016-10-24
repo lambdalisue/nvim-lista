@@ -8,12 +8,15 @@ DIGRAPH_PATTERN = re.compile(r'(\S{2})\s+(\S)+\s+\d+')
 
 
 class Digraph(metaclass=Singleton):
+    """A digraph registry class."""
+
     __slots__ = ('registry',)
 
     def __init__(self):
         self.registry = None
 
-    def find(self, nvim: object, char1: str, char2: str) -> str:
+    def find(self, nvim, char1, char2):
+        """Find a digraph of char1/char2."""
         if self.registry is None:
             digraph_output = nvim.call('execute', 'digraphs')
             self.registry = _parse_digraph_output(digraph_output)
@@ -21,7 +24,8 @@ class Digraph(metaclass=Singleton):
             return self.registry.get(char2 + char1, char2)
         return self.registry[char1 + char2]
 
-    def retrieve(self, nvim: object) -> str:
+    def retrieve(self, nvim):
+        """Retrieve char1/char2 and return a corresponding digraph."""
         code1 = getchar(nvim)
         if isinstance(code1, bytes) and code1.startswith(b'\x80'):
             return Key.represent(nvim, code1)
@@ -33,7 +37,7 @@ class Digraph(metaclass=Singleton):
         return self.find(nvim, char1, char2)
 
 
-def _parse_digraph_output(output: str) -> dict:
+def _parse_digraph_output(output):
     output = output.replace('\n', '')
     output = output.replace('\r', '')
     return {

@@ -1,12 +1,7 @@
 """Key module."""
 from curses import ascii  # type: ignore
-from typing import cast, Union, Tuple, Dict, NamedTuple     # noqa: F401
-from neovim import Nvim
+from collections import namedtuple
 from .util import ensure_bytes, ensure_str, int2char
-
-
-KeyCode = Union[int, bytes]
-KeyExpr = Union[KeyCode, str]
 
 
 ESCAPE_QUOTE = str.maketrans({
@@ -71,10 +66,7 @@ SPECIAL_KEYS.update(dict(
 ))
 
 
-KeyBase = NamedTuple('KeyBase', [
-    ('code', KeyCode),
-    ('char', str),
-])
+KeyBase = namedtuple('KeyBase', ['code', 'char'])
 
 
 class Key(KeyBase):
@@ -87,14 +79,15 @@ class Key(KeyBase):
             string when the key is not printable.
     """
 
-    __slots__ = ()  # type: Tuple[str, ...]
-    __cached = {}   # type: Dict[KeyExpr, Key]
+    __slots__ = ()
+    __cached = {}
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.char
 
     @classmethod
-    def represent(cls, nvim: Nvim, code: KeyCode) -> str:
+    def represent(cls, nvim, code):
+        """Return a string representation of a Keycode."""
         if isinstance(code, int):
             return int2char(nvim, code)
         if code in SPECIAL_KEYS_REVRESE:
@@ -104,7 +97,7 @@ class Key(KeyBase):
             return ensure_str(nvim, code)
 
     @classmethod
-    def parse(cls, nvim: Nvim, expr: KeyExpr) -> 'Key':
+    def parse(cls, nvim, expr):
         """Parse a key expression and return a Key instance.
 
         It returns a Key instance of a key expression. The instance is cached
@@ -138,7 +131,7 @@ class Key(KeyBase):
         return cls.__cached[expr]
 
 
-def _resolve(nvim: Nvim, expr: KeyExpr) -> KeyCode:
+def _resolve(nvim, expr):
     if isinstance(expr, int):
         return expr
     elif isinstance(expr, str):
@@ -162,7 +155,7 @@ def _resolve(nvim: Nvim, expr: KeyExpr) -> KeyCode:
     return expr
 
 
-def _resolve_from_special_keys(nvim: Nvim, inner: bytes) -> KeyCode:
+def _resolve_from_special_keys(nvim, inner):
     inner_upper = inner.upper()
     inner_upper_str = ensure_str(nvim, inner_upper)
     if inner_upper_str in SPECIAL_KEYS:
@@ -173,12 +166,12 @@ def _resolve_from_special_keys(nvim: Nvim, inner: bytes) -> KeyCode:
                 return ascii.ctrl(inner[-1])
         return b''.join([
             CTRL_KEY,
-            cast(bytes, _resolve_from_special_keys(nvim, inner[2:])),
+            _resolve_from_special_keys(nvim, inner[2:]),
         ])
     elif inner_upper.startswith(b'M-') or inner_upper.startswith(b'A-'):
         return b''.join([
             META_KEY,
-            cast(bytes, _resolve_from_special_keys(nvim, inner[2:])),
+            _resolve_from_special_keys(nvim, inner[2:]),
         ])
     elif inner_upper == b'LEADER':
         leader = nvim.vars['mapleader']

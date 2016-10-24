@@ -1,5 +1,4 @@
 """Caret module."""
-from .context import Context
 
 
 class Caret:
@@ -15,7 +14,7 @@ class Caret:
 
     __slots__ = ('context',)
 
-    def __init__(self, context: Context) -> None:
+    def __init__(self, context):
         """Constructor.
 
         Args:
@@ -24,7 +23,7 @@ class Caret:
         self.context = context
 
     @property
-    def locus(self) -> int:
+    def locus(self):
         """int: Read and write current locus index of the caret in the prompt.
 
         When a value is smaller than the ``head`` attribute or larger than the
@@ -51,7 +50,7 @@ class Caret:
         return self.context.caret_locus
 
     @locus.setter
-    def locus(self, value: int) -> None:
+    def locus(self, value):
         if value < self.head:
             self.context.caret_locus = self.head
         elif value > self.tail:
@@ -60,7 +59,7 @@ class Caret:
             self.context.caret_locus = value
 
     @property
-    def head(self) -> int:
+    def head(self):
         """int: Readonly head locus index of the caret in the prompt.
 
         Example:
@@ -75,7 +74,7 @@ class Caret:
         return 0
 
     @property
-    def lead(self) -> int:
+    def lead(self):
         """int: Readonly lead locus index of the caret in the prompt.
 
         The lead indicate a minimum index for a first printable character.
@@ -93,7 +92,7 @@ class Caret:
         return len(self.context.text) - len(self.context.text.lstrip())
 
     @property
-    def tail(self) -> int:
+    def tail(self):
         """int: Readonly tail locus index of the caret in the prompt.
 
         Example:
@@ -106,7 +105,7 @@ class Caret:
         """
         return len(self.context.text)
 
-    def get_backward_text(self) -> str:
+    def get_backward_text(self):
         """A backward text from the caret.
 
         Returns:
@@ -126,7 +125,7 @@ class Caret:
             return ''
         return self.context.text[:self.locus]
 
-    def get_selected_text(self) -> str:
+    def get_selected_text(self):
         """A selected text under the caret.
 
         Returns:
@@ -146,7 +145,7 @@ class Caret:
             return ''
         return self.context.text[self.locus]
 
-    def get_forward_text(self) -> str:
+    def get_forward_text(self):
         """A forward text from the caret.
 
         Returns:

@@ -17,7 +17,7 @@ class Context:
 
     __slots__ = ('text', 'caret_locus')
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Constructor.
 
         Args:
@@ -27,7 +27,7 @@ class Context:
         self.text = ''
         self.caret_locus = 0
 
-    def to_dict(self) -> dict:
+    def to_dict(self):
         """Convert a context instance into a dictionary.
 
         Use ``Context.from_dict(d)`` to restore a context instance from a
@@ -52,7 +52,7 @@ class Context:
             for k in self.__slots__
         }
 
-    def extend(self, d: dict) -> None:
+    def extend(self, d):
         """Extend a context instance from a dictionary.
 
         Use ``context.to_dict()`` to create a corresponding dictionary.
@@ -84,7 +84,7 @@ class Context:
                 setattr(self, k, v)
 
     @classmethod
-    def from_dict(cls, d: dict) -> 'Context':
+    def from_dict(cls, d):
         """Create a new context instance from a dictionary.
 
         Use ``context.to_dict()`` to create a corresponding dictionary.

@@ -1,12 +1,7 @@
 """Action module."""
-from typing import Callable, Optional, Dict, Tuple, Sequence    # noqa: F401
-from .prompt import Prompt, Status
+from .prompt import Status
 from .digraph import Digraph
 from .util import safeget, int2char, int2repr, getchar
-
-
-ActionCallback = Callable[[Prompt], Optional[int]]
-ActionRules = Sequence[Tuple[str, ActionCallback]]
 
 
 class Action:
@@ -18,11 +13,11 @@ class Action:
 
     __slots__ = ('registry',)
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Constructor."""
-        self.registry = {}  # type: Dict[str, ActionCallback]
+        self.registry = {}
 
-    def register(self, name: str, callback: ActionCallback=None) -> None:
+    def register(self, name, callback):
         """Register action callback to a specified name.
 
         Args:
@@ -37,7 +32,7 @@ class Action:
         """
         self.registry[name] = callback
 
-    def register_from_rules(self, rules: ActionRules) -> None:
+    def register_from_rules(self, rules) -> None:
         """Register action callbacks from rules.
 
         Args:
@@ -55,7 +50,7 @@ class Action:
         for rule in rules:
             self.register(*rule)
 
-    def call(self, prompt: Prompt, name: str) -> Optional[Status]:
+    def call(self, prompt, name):
         """Call a callback of specified action.
 
         Args:
@@ -87,7 +82,7 @@ class Action:
         )
 
     @classmethod
-    def from_rules(cls, rules: ActionRules) -> 'Action':
+    def from_rules(cls, rules):
         """Create a new action instance from rules.
 
         Args:

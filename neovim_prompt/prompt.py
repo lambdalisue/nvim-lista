@@ -3,14 +3,6 @@ import re
 import copy
 import enum
 from datetime import timedelta
-from typing import Optional, Union, Tuple
-from neovim import Nvim
-from .key import Key
-from .keystroke import Keystroke
-from .context import Context
-
-KeystrokeType = Tuple[Key, ...]     # noqa: F401
-KeystrokeExpr = Union[KeystrokeType, bytes, str]    # noqa: F401
 
 ACTION_KEYSTROKE_PATTERN = re.compile(r'<(\w+:\w+)>')
 
@@ -29,6 +21,7 @@ IMPRINTABLE_REPRESENTS = {
     '\r': '^M',
     '\udc80\udcffX': '^@',  # NOTE: ^0 representation in Vim.
 }
+
 IMPRINTABLE_PATTERN = re.compile(r'(%s)' % '|'.join(
     IMPRINTABLE_REPRESENTS.keys()
 ))
@@ -55,7 +48,7 @@ class Prompt:
 
     prefix = ''
 
-    def __init__(self, nvim: Nvim, context: Context) -> None:
+    def __init__(self, nvim, context):
         """Constructor.
 
         Args:
@@ -75,7 +68,7 @@ class Prompt:
         self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
 
     @property
-    def text(self) -> str:
+    def text(self):
         """str: A current context text.
 
         It automatically adjust the current caret locus to the tail of the text
@@ -111,11 +104,11 @@ class Prompt:
         return self.context.text
 
     @text.setter
-    def text(self, value: str) -> None:
+    def text(self, value):
         self.context.text = value
         self.caret.locus = len(value)
 
-    def apply_custom_mappings_from_vim_variable(self, varname: str) -> None:
+    def apply_custom_mappings_from_vim_variable(self, varname):
         """Apply custom key mappings from Vim variable.
 
         Args:
@@ -126,7 +119,7 @@ class Prompt:
             for rule in custom_mappings:
                 self.keymap.register_from_rule(self.nvim, rule)
 
-    def insert_text(self, text: str) -> None:
+    def insert_text(self, text):
         """Insert text after the caret.
 
         Args:
@@ -154,7 +147,7 @@ class Prompt:
         ])
         self.caret.locus = locus + len(text)
 
-    def replace_text(self, text: str) -> None:
+    def replace_text(self, text):
         """Replace text after the caret.
 
         Args:
@@ -181,7 +174,7 @@ class Prompt:
         ])
         self.caret.locus = locus + len(text)
 
-    def update_text(self, text: str) -> None:
+    def update_text(self, text):
         """Insert or replace text after the caret.
 
         Args:
@@ -210,7 +203,7 @@ class Prompt:
         else:
             self.replace_text(text)
 
-    def redraw_prompt(self) -> None:
+    def redraw_prompt(self):
         # NOTE:
         # There is a highlight name 'Cursor' but some sometime the visibility
         # is quite low (e.g. tender) so use 'IncSearch' instead while the
@@ -226,7 +219,7 @@ class Prompt:
             _build_echon_expr('None', forward_text),
         ]))
 
-    def start(self, default: str=None) -> Status:
+    def start(self, default=None):
         """Start prompt with ``default`` text and return value.
 
         Args:
@@ -264,7 +257,7 @@ class Prompt:
             self.nvim.call('histadd', 'input', self.text)
         return self.on_term(status)
 
-    def on_init(self, default: Optional[str]) -> Optional[Status]:
+    def on_init(self, default):
         """Initialize the prompt.
 
         It calls 'inputsave' function in Vim and assign ``default`` text to the
@@ -284,7 +277,7 @@ class Prompt:
         if default:
             self.text = default
 
-    def on_update(self, status: Optional[Status]) -> Status:
+    def on_update(self, status):
         """Update the prompt status and return the status.
 
         It is used to update the prompt status. In default, it does nothing and
@@ -302,7 +295,7 @@ class Prompt:
         """
         return status
 
-    def on_redraw(self) -> None:
+    def on_redraw(self):
         """Redraw the prompt.
 
         It is used to redraw the prompt. In default, it echos specified prefix
@@ -310,7 +303,7 @@ class Prompt:
         """
         self.redraw_prompt()
 
-    def on_keypress(self, keystroke: Keystroke) -> Optional[Status]:
+    def on_keypress(self, keystroke):
         """Handle a pressed keystroke and return the status.
 
         It is used to handle a pressed keystroke. Note that subclass should NOT
@@ -335,7 +328,7 @@ class Prompt:
         else:
             self.update_text(str(keystroke))
 
-    def on_term(self, status: Status) -> Status:
+    def on_term(self, status):
         """Finalize the prompt.
 
         It calls 'inputrestore' function in Vim to finalize the prompt in
@@ -351,7 +344,7 @@ class Prompt:
         return status
 
 
-def _build_echon_expr(hl: str, text: str) -> str:
+def _build_echon_expr(hl, text):
     if not IMPRINTABLE_PATTERN.search(text):
         return 'echohl %s|echon "%s"' % (
             hl, text.translate(ESCAPE_ECHO)

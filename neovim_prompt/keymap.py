@@ -2,17 +2,9 @@
 import time
 from operator import itemgetter
 from datetime import datetime
-from typing import cast, Iterator, Optional, Sequence, Tuple, Union
-from neovim import Nvim
-from .key import Key, KeyCode
-from .keystroke import Keystroke, KeystrokeExpr
+from .key import Key
+from .keystroke import Keystroke
 from .util import getchar
-
-Rule = Union[
-    Tuple[KeystrokeExpr, KeystrokeExpr],
-    Tuple[KeystrokeExpr, KeystrokeExpr, bool],
-    Tuple[KeystrokeExpr, KeystrokeExpr, bool, bool],
-]
 
 
 class Keymap:
@@ -20,15 +12,11 @@ class Keymap:
 
     __slots__ = ('registry',)
 
-    def __init__(self) -> None:
+    def __init__(self):
         """Constructor."""
-        self.registry = {}  # type: Dict[Keystroke, tuple]
+        self.registry = {}
 
-    def register(self,
-                 lhs: Keystroke,
-                 rhs: Keystroke,
-                 noremap: bool=False,
-                 nowait: bool=False) -> None:
+    def register(self, lhs, rhs, noremap=False, nowait=False):
         """Register a keymap.
 
         Args:
@@ -69,7 +57,7 @@ class Keymap:
         """
         self.registry[lhs] = (lhs, rhs, noremap, nowait)
 
-    def register_from_rule(self, nvim: Nvim, rule: Rule) -> None:
+    def register_from_rule(self, nvim, rule):
         """Register a keymap from a rule.
 
         Args:
@@ -100,27 +88,19 @@ class Keymap:
 
         """
         if len(rule) == 2:
-            lhs, rhs = cast('Tuple[KeystrokeExpr, KeystrokeExpr]', rule)
+            lhs, rhs = rule
             noremap = False
             nowait = False
         elif len(rule) == 3:
-            lhs, rhs, noremap = cast(
-                'Tuple[KeystrokeExpr, KeystrokeExpr, bool]',
-                rule
-            )
+            lhs, rhs, noremap = rule
             nowait = False
         else:
-            lhs, rhs, noremap, nowait = cast(
-                'Tuple[KeystrokeExpr, KeystrokeExpr, bool, bool]',
-                rule
-            )
+            lhs, rhs, noremap, nowait = rule
         lhs = Keystroke.parse(nvim, lhs)
         rhs = Keystroke.parse(nvim, rhs)
         self.register(lhs, rhs, noremap, nowait)
 
-    def register_from_rules(self,
-                            nvim: Nvim,
-                            rules: Sequence[Rule]) -> None:
+    def register_from_rules(self, nvim, rules):
         """Register keymaps from rule tuple.
 
         Args:
@@ -149,7 +129,7 @@ class Keymap:
         for rule in rules:
             self.register_from_rule(nvim, rule)
 
-    def filter(self, lhs: Keystroke) -> Iterator[Keystroke]:
+    def filter(self, lhs):
         """Filter keymaps by ``lhs`` Keystroke and return a sorted candidates.
 
         Args:
@@ -197,14 +177,9 @@ class Keymap:
             self.registry[k]
             for k in self.registry.keys() if k.startswith(lhs)
         )
-        return cast(
-            'Iterator[Keystroke]',
-            sorted(candidates, key=itemgetter(0)),
-        )
+        return sorted(candidates, key=itemgetter(0))
 
-    def resolve(self,
-                lhs: Keystroke,
-                nowait: bool=False) -> Optional[Keystroke]:
+    def resolve(self, lhs, nowait=False):
         """Resolve ``lhs`` Keystroke instance and return resolved keystroke.
 
         Args:
@@ -285,7 +260,7 @@ class Keymap:
                 return rhs if noremap else self.resolve(rhs, nowait=True)
         return None
 
-    def harvest(self, nvim: Nvim, timeoutlen: Optional[int]=None) -> Keystroke:
+    def harvest(self, nvim, timeoutlen):
         """Harvest a keystroke from getchar in Vim and return resolved.
 
         It reads 'timeout' and 'timeoutlen' options in Vim and harvest a
@@ -324,7 +299,7 @@ class Keymap:
                 return keystroke
 
     @classmethod
-    def from_rules(cls, nvim: Nvim, rules: Sequence[Rule]) -> 'Keymap':
+    def from_rules(cls, nvim, rules):
         """Create a keymap instance from a rule tuple.
 
         Args:
@@ -356,7 +331,7 @@ class Keymap:
         return keymap
 
 
-def _getcode(nvim: 'Nvim', timeout: Optional[datetime]) -> Optional[KeyCode]:
+def _getcode(nvim, timeout):
     while not timeout or timeout > datetime.now():
         code = getchar(nvim, False)
         if code != 0:
