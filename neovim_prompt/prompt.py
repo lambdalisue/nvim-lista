@@ -1,7 +1,6 @@
 """Prompt module."""
 import re
 import copy
-import enum
 from datetime import timedelta
 
 ACTION_KEYSTROKE_PATTERN = re.compile(r'<(\w+:\w+)>')
@@ -27,20 +26,13 @@ IMPRINTABLE_PATTERN = re.compile(r'(%s)' % '|'.join(
 ))
 
 
-class Status(enum.Enum):
-    """A prompt status enum class."""
+STATUS_PROGRESS = 0
+STATUS_ACCEPT = 1
+STATUS_CANCEL = 2
+STATUS_ERROR = 3
 
-    progress = 0
-    accept = 1
-    cancel = 2
-    error = 3
-
-
-class InsertMode(enum.Enum):
-    """A insert mode enum class."""
-
-    insert = 1
-    replace = 2
+INSERT_MODE_INSERT = 1
+INSERT_MODE_REPLACE = 2
 
 
 class Prompt:
@@ -60,7 +52,7 @@ class Prompt:
         from .keymap import DEFAULT_KEYMAP_RULES, Keymap
         from .action import DEFAULT_ACTION
         self.nvim = nvim
-        self.insert_mode = InsertMode.insert
+        self.insert_mode = INSERT_MODE_INSERT
         self.context = context
         self.caret = Caret(context)
         self.history = History(self)
@@ -189,16 +181,16 @@ class Prompt:
             >>> context.text = "Hello Goodbye"
             >>> context.caret_locus = 3
             >>> prompt = Prompt(nvim, context)
-            >>> prompt.insert_mode = InsertMode.insert
+            >>> prompt.insert_mode = INSERT_MODE_INSERT
             >>> prompt.update_text('AA')
             >>> prompt.text
             'HelAAlo Goodbye'
-            >>> prompt.insert_mode = InsertMode.replace
+            >>> prompt.insert_mode = INSERT_MODE_REPLACE
             >>> prompt.update_text('BB')
             >>> prompt.text
             'HelAABB Goodbye'
         """
-        if self.insert_mode == InsertMode.insert:
+        if self.insert_mode == INSERT_MODE_INSERT:
             self.insert_text(text)
         else:
             self.replace_text(text)
@@ -227,9 +219,9 @@ class Prompt:
                 text in the context specified in the constructor is used.
 
         Returns:
-            Status: The status of the prompt.
+            int: The status of the prompt.
         """
-        status = self.on_init(default) or Status.progress
+        status = self.on_init(default) or STATUS_PROGRESS
         if self.nvim.options['timeout']:
             timeoutlen = timedelta(
                 milliseconds=int(self.nvim.options['timeoutlen'])
@@ -237,21 +229,21 @@ class Prompt:
         else:
             timeoutlen = None
         try:
-            status = self.on_update(status) or Status.progress
-            while status is Status.progress:
+            status = self.on_update(status) or STATUS_PROGRESS
+            while status is STATUS_PROGRESS:
                 self.on_redraw()
                 status = self.on_keypress(
                     self.keymap.harvest(self.nvim, timeoutlen)
-                ) or Status.progress
-                status = self.on_update(status) or Status.progress
+                ) or STATUS_PROGRESS
+                status = self.on_update(status) or STATUS_PROGRESS
         except KeyboardInterrupt:
-            status = Status.cancel
+            status = STATUS_CANCEL
         except self.nvim.error as e:
             self.nvim.command('|'.join([
                 'echoerr "%s"' % line.translate(ESCAPE_ECHO)
                 for line in str(e).splitlines()
             ]))
-            status = Status.error
+            status = STATUS_ERROR
         self.nvim.command('redraw!')
         if self.text:
             self.nvim.call('histadd', 'input', self.text)
@@ -268,10 +260,10 @@ class Prompt:
                 text in the context specified in the constructor is used.
 
         Returns:
-            None or Status: The return value will be used as a status of the
+            None or int: The return value will be used as a status of the
                 prompt mainloop, indicating that if return value is not
-                Status.progress, the prompt mainloop immediately terminated.
-                Returning None is equal to returning Status.progress.
+                STATUS_PROGRESS, the prompt mainloop immediately terminated.
+                Returning None is equal to returning STATUS_PROGRESS.
         """
         self.nvim.call('inputsave')
         if default:
@@ -284,14 +276,14 @@ class Prompt:
         return the specified ``status`` directly.
 
         Args:
-            status (Status): A prompt status which is updated by previous
+            status (int): A prompt status which is updated by previous
                 on_keypress call.
 
         Returns:
-            None or Status: The return value will be used as a status of the
+            None or int: The return value will be used as a status of the
                 prompt mainloop, indicating that if return value is not
-                Status.progress, the prompt mainloop immediately terminated.
-                Returning None is equal to returning Status.progress.
+                STATUS_PROGRESS, the prompt mainloop immediately terminated.
+                Returning None is equal to returning STATUS_PROGRESS.
         """
         return status
 
@@ -317,10 +309,10 @@ class Prompt:
                 instance is a reslved keystroke instace by keymap.
 
         Returns:
-            None or Status: The return value will be used as a status of the
+            None or int: The return value will be used as a status of the
                 prompt mainloop, indicating that if return value is not
-                Status.progress, the prompt mainloop immediately terminated.
-                Returning None is equal to returning Status.progress.
+                STATUS_PROGRESS, the prompt mainloop immediately terminated.
+                Returning None is equal to returning STATUS_PROGRESS.
         """
         m = ACTION_KEYSTROKE_PATTERN.match(str(keystroke))
         if m:
@@ -335,10 +327,10 @@ class Prompt:
         default. The return value is used as a return value of the prompt.
 
         Args:
-            status (Status): A prompt status.
+            status (int): A prompt status.
 
         Returns:
-            Status: A status which is used as a result value of the prompt.
+            int: A status which is used as a result value of the prompt.
         """
         self.nvim.call('inputrestore')
         return status

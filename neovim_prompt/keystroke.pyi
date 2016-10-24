@@ -4,6 +4,7 @@ from .key import Key
 
 
 KeystrokeType = Tuple[Key, ...]
+
 KeystrokeExpr = Union[KeystrokeType, bytes, str]
 
 

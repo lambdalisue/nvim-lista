@@ -1,7 +1,10 @@
 from unittest.mock import MagicMock
 import pytest
 from neovim_prompt.keystroke import Keystroke
-from neovim_prompt.prompt import Prompt, Status, InsertMode
+from neovim_prompt.prompt import (
+    Prompt,
+    STATUS_ACCEPT, STATUS_CANCEL, STATUS_ERROR,
+)
 
 
 def test_Prompt_constructor(nvim, context):
@@ -132,7 +135,7 @@ def test_start(prompt):
         Keystroke.parse(nvim, 'c'),
         Keystroke.parse(nvim, '<prompt:accept>'),
     ]
-    assert prompt.start() is Status.accept
+    assert prompt.start() is STATUS_ACCEPT
     assert prompt.text == 'abc'
 
     prompt.keymap.harvest.side_effect = [
@@ -141,7 +144,7 @@ def test_start(prompt):
         Keystroke.parse(nvim, 'c'),
         Keystroke.parse(nvim, '<prompt:accept>'),
     ]
-    assert prompt.start('default') == Status.accept
+    assert prompt.start('default') == STATUS_ACCEPT
     assert prompt.text == 'defaultabc'
 
     prompt.keymap.harvest.side_effect = [
@@ -150,7 +153,7 @@ def test_start(prompt):
         Keystroke.parse(nvim, 'c'),
         Keystroke.parse(nvim, '<prompt:cancel>'),
     ]
-    assert prompt.start() is Status.cancel
+    assert prompt.start() is STATUS_CANCEL
 
 
 def test_start_exception(prompt):
@@ -165,10 +168,10 @@ def test_start_exception(prompt):
     }
     prompt.keymap = MagicMock()
     prompt.keymap.harvest.side_effect = KeyboardInterrupt
-    assert prompt.start() is Status.cancel
+    assert prompt.start() is STATUS_CANCEL
 
     prompt.keymap.harvest.side_effect = Exception
-    assert prompt.start() is Status.error
+    assert prompt.start() is STATUS_ERROR
 
 
 def test_on_init(prompt):
@@ -184,8 +187,8 @@ def test_on_init(prompt):
 
 
 def test_on_update(prompt):
-    assert prompt.on_update(Status.accept) == Status.accept
-    assert prompt.on_update(Status.cancel) == Status.cancel
+    assert prompt.on_update(STATUS_ACCEPT) == STATUS_ACCEPT
+    assert prompt.on_update(STATUS_CANCEL) == STATUS_CANCEL
 
 
 def test_on_redraw(prompt):
@@ -210,11 +213,11 @@ def test_on_redraw(prompt):
 def on_keypress(prompt):
     nvim = prompt.nvim
     prompt.action = MagicMock()
-    prompt.action.call.return_value = Status.accept
+    prompt.action.call.return_value = STATUS_ACCEPT
     prompt.update_text = MagicMock()
 
     assert prompt.on_keypress(Keystroke.parse(nvim, '<prompt:accept>')) \
-        == Status.accept
+        == STATUS_ACCEPT
     prompt.action.call.assert_called_with(prompt, 'prompt:accept')
 
     assert prompt.on_keypress(Keystroke.parse(nvim, 'a')) == None
@@ -223,5 +226,5 @@ def on_keypress(prompt):
 
 def test_on_term(prompt):
     prompt.nvim.call = MagicMock()
-    assert prompt.on_term(Status.accept) is Status.accept
+    assert prompt.on_term(STATUS_ACCEPT) is STATUS_ACCEPT
     prompt.nvim.call.assert_called_with('inputrestore')

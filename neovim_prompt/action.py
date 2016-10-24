@@ -1,5 +1,5 @@
 """Action module."""
-from .prompt import Status
+from .prompt import STATUS_PROGRESS
 from .digraph import Digraph
 from .util import safeget, int2char, int2repr, getchar
 
@@ -26,9 +26,9 @@ class Action:
                 ``prompt.prompt.Prompt`` instance and return None or int.
 
         Example:
-            >>> from neovim_prompt.prompt import Status
+            >>> from neovim_prompt.prompt import STATUS_ACCEPT
             >>> action = Action()
-            >>> action.register('prompt:accept', lambda prompt: Status.accept)
+            >>> action.register('prompt:accept', lambda prompt: STATUS_ACCEPT)
         """
         self.registry[name] = callback
 
@@ -40,11 +40,12 @@ class Action:
                 (name, callback) tuple.
 
         Example:
-            >>> from neovim_prompt.prompt import Status
+            >>> from neovim_prompt.prompt import (STATUS_ACCEPT,
+            ...                                   STATUS_CANCEL)
             >>> action = Action()
             >>> action.register_from_rules([
-            ...     ('prompt:accept', lambda prompt: Status.accept),
-            ...     ('prompt:cancel', lambda prompt: Status.cancel),
+            ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
+            ...     ('prompt:cancel', lambda prompt: STATUS_CANCEL),
             ... ])
         """
         for rule in rules:
@@ -59,18 +60,19 @@ class Action:
 
         Example:
             >>> from unittest.mock import MagicMock
-            >>> from neovim_prompt.prompt import Status
+            >>> from neovim_prompt.prompt import (STATUS_ACCEPT,
+            ...                                   STATUS_CANCEL)
             >>> prompt = MagicMock()
             >>> action = Action()
             >>> action.register_from_rules([
-            ...     ('prompt:accept', lambda prompt: Status.accept),
-            ...     ('prompt:cancel', lambda prompt: Status.cancel),
+            ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
+            ...     ('prompt:cancel', lambda prompt: STATUS_CANCEL),
             ... ])
             >>> action.call(prompt, 'prompt:accept')
-            <Status.accept: 1>
+            1
 
         Returns:
-            None or Status: None or int which represent the prompt status.
+            None or int: None or int which represent the prompt status.
         """
         if name in self.registry:
             fn = self.registry[name]
@@ -90,10 +92,11 @@ class Action:
                 (name, callback) tuple.
 
         Example:
-            >>> from neovim_prompt.prompt import Status
+            >>> from neovim_prompt.prompt import (STATUS_ACCEPT,
+            ...                                   STATUS_CANCEL)
             >>> Action.from_rules([
-            ...     ('prompt:accept', lambda prompt: Status.accept),
-            ...     ('prompt:cancel', lambda prompt: Status.cancel),
+            ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
+            ...     ('prompt:cancel', lambda prompt: STATUS_CANCEL),
             ... ])
             <neovim_prompt.action.Action object at ...>
 
@@ -109,13 +112,13 @@ class Action:
 def _call(prompt, fname):
     result = prompt.nvim.call(fname, prompt.context.to_dict())
     if result is None:
-        return Status.progress
+        return STATUS_PROGRESS
     elif isinstance(result, int):
         return result
     elif isinstance(result, dict):
         prompt.context.extend(result)
     elif isinstance(result, (list, tuple)):
-        status = safeget(result, 0, default=Status.progress)
+        status = safeget(result, 0, default=STATUS_PROGRESS)
         prompt.context.extend(safeget(result, 1, default={}))
         return status
     else:
@@ -126,21 +129,21 @@ def _call(prompt, fname):
 
 # Default actions -------------------------------------------------------------
 def _accept(prompt):
-    from .prompt import Status
-    return Status.accept
+    from .prompt import STATUS_ACCEPT
+    return STATUS_ACCEPT
 
 
 def _cancel(prompt):
-    from .prompt import Status
-    return Status.cancel
+    from .prompt import STATUS_CANCEL
+    return STATUS_CANCEL
 
 
 def _toggle_insert_mode(prompt):
-    from .prompt import InsertMode
-    if prompt.insert_mode == InsertMode.insert:
-        prompt.insert_mode = InsertMode.replace
+    from .prompt import INSERT_MODE_INSERT, INSERT_MODE_REPLACE
+    if prompt.insert_mode == INSERT_MODE_INSERT:
+        prompt.insert_mode = INSERT_MODE_REPLACE
     else:
-        prompt.insert_mode = InsertMode.insert
+        prompt.insert_mode = INSERT_MODE_INSERT
 
 
 def _delete_char_before_caret(prompt):

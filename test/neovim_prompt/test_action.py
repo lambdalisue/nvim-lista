@@ -58,22 +58,22 @@ def test_Action_from_rules():
 
 
 def test_accept(prompt, action):
-    from neovim_prompt.prompt import Status
-    assert action.call(prompt, 'prompt:accept') == Status.accept
+    from neovim_prompt.prompt import STATUS_ACCEPT
+    assert action.call(prompt, 'prompt:accept') == STATUS_ACCEPT
 
 
 def test_cancel(prompt, action):
-    from neovim_prompt.prompt import Status
-    assert action.call(prompt, 'prompt:cancel') == Status.cancel
+    from neovim_prompt.prompt import STATUS_CANCEL
+    assert action.call(prompt, 'prompt:cancel') == STATUS_CANCEL
 
 
 def test_toggle_insert_mode(prompt, action):
-    from neovim_prompt.prompt import InsertMode
-    prompt.insert_mode = InsertMode.insert
+    from neovim_prompt.prompt import INSERT_MODE_INSERT, INSERT_MODE_REPLACE
+    prompt.insert_mode = INSERT_MODE_INSERT
     assert action.call(prompt, 'prompt:toggle_insert_mode') is None
-    assert prompt.insert_mode == InsertMode.replace
+    assert prompt.insert_mode == INSERT_MODE_REPLACE
     assert action.call(prompt, 'prompt:toggle_insert_mode') is None
-    assert prompt.insert_mode == InsertMode.insert
+    assert prompt.insert_mode == INSERT_MODE_INSERT
 
 
 def test_delete_char_before_caret(prompt, action):
