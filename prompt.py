@@ -56,7 +56,7 @@ class Prompt:
         self.context = context
         self.caret = Caret(context)
         self.history = History(self)
-        self.action = copy.copy(DEFAULT_ACTION)     # type: ignore
+        self.action = copy.copy(DEFAULT_ACTION)
         self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
 
     @property
