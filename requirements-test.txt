@@ -1,7 +1,0 @@
-tox
-pytest
-flake8
-coverage
-pytest-flake8
-pytest-cov
-mypy-lang

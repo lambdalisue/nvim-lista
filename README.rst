@@ -12,26 +12,6 @@ neovim-prompt
     :target: https://coveralls.io/github/lambdalisue/neovim-prompt?branch=master
     :alt: Coverage
 
-.. image:: https://requires.io/github/lambdalisue/neovim-prompt/requirements.svg?branch=master
-    :target: https://requires.io/github/lambdalisue/neovim-prompt/requirements
-    :alt: Requirements
-
-.. image:: https://img.shields.io/pypi/v/neovim-prompt.svg
-    :target: https://pypi.python.org/pypi/neovim-prompt/
-    :alt: Version
-
-.. image:: https://img.shields.io/pypi/status/neovim-prompt.svg
-    :target: https://pypi.python.org/pypi/neovim-prompt/
-    :alt: Status
-
-.. image:: https://img.shields.io/pypi/l/neovim-prompt.svg
-    :target: https://pypi.python.org/pypi/neovim-prompt/
-    :alt: License
-
-.. image:: https://img.shields.io/pypi/pyversions/neovim-prompt.svg
-    :target: https://pypi.python.org/pypi/neovim-prompt/
-    :alt: Python versions
-
 Introductions
 -------------------------------------------------------------------------------
 
