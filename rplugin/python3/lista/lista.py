@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, Sequence, Any  # noqa: F401
 from neovim import Nvim
 from neovim.api.buffer import Buffer  # noqa: F401
-from neovim_prompt.prompt import Prompt, Status
+from prompt.prompt import Prompt, Status
 from .matcher import AbstractMatcher  # noqa: F401
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher

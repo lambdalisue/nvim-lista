@@ -30,7 +30,7 @@ class Caret:
         ``tail`` attribute, the value is regualted to ``head`` or ``tail``.
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> context = Context()
             >>> context.text = "Hello"
             >>> caret = Caret(context)
@@ -63,7 +63,7 @@ class Caret:
         """int: Readonly head locus index of the caret in the prompt.
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> context = Context()
             >>> context.text = "Hello"
             >>> caret = Caret(context)
@@ -96,7 +96,7 @@ class Caret:
         """int: Readonly tail locus index of the caret in the prompt.
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> context = Context()
             >>> context.text = "Hello"
             >>> caret = Caret(context)

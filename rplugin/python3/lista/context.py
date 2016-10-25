@@ -1,4 +1,4 @@
-from neovim_prompt.context import Context as BaseContext
+from prompt.context import Context as BaseContext
 
 
 class Context(BaseContext):

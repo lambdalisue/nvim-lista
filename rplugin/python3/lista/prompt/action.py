@@ -26,7 +26,7 @@ class Action:
                 ``prompt.prompt.Prompt`` instance and return None or int.
 
         Example:
-            >>> from neovim_prompt.prompt import STATUS_ACCEPT
+            >>> from prompt.prompt import STATUS_ACCEPT
             >>> action = Action()
             >>> action.register('prompt:accept', lambda prompt: STATUS_ACCEPT)
         """
@@ -40,7 +40,7 @@ class Action:
                 (name, callback) tuple.
 
         Example:
-            >>> from neovim_prompt.prompt import (STATUS_ACCEPT,
+            >>> from prompt.prompt import (STATUS_ACCEPT,
             ...                                   STATUS_CANCEL)
             >>> action = Action()
             >>> action.register_from_rules([
@@ -60,7 +60,7 @@ class Action:
 
         Example:
             >>> from unittest.mock import MagicMock
-            >>> from neovim_prompt.prompt import (STATUS_ACCEPT,
+            >>> from prompt.prompt import (STATUS_ACCEPT,
             ...                                   STATUS_CANCEL)
             >>> prompt = MagicMock()
             >>> action = Action()
@@ -92,13 +92,13 @@ class Action:
                 (name, callback) tuple.
 
         Example:
-            >>> from neovim_prompt.prompt import (STATUS_ACCEPT,
+            >>> from prompt.prompt import (STATUS_ACCEPT,
             ...                                   STATUS_CANCEL)
             >>> Action.from_rules([
             ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
             ...     ('prompt:cancel', lambda prompt: STATUS_CANCEL),
             ... ])
-            <neovim_prompt.action.Action object at ...>
+            <prompt.action.Action object at ...>
 
         Returns:
             Action: An action instance.
