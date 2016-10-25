@@ -26,7 +26,7 @@ class Action:
                 ``prompt.prompt.Prompt`` instance and return None or int.
 
         Example:
-            >>> from prompt.prompt import STATUS_ACCEPT
+            >>> from .prompt import STATUS_ACCEPT
             >>> action = Action()
             >>> action.register('prompt:accept', lambda prompt: STATUS_ACCEPT)
         """
@@ -40,8 +40,7 @@ class Action:
                 (name, callback) tuple.
 
         Example:
-            >>> from prompt.prompt import (STATUS_ACCEPT,
-            ...                                   STATUS_CANCEL)
+            >>> from .prompt import STATUS_ACCEPT, STATUS_CANCEL
             >>> action = Action()
             >>> action.register_from_rules([
             ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
@@ -60,8 +59,7 @@ class Action:
 
         Example:
             >>> from unittest.mock import MagicMock
-            >>> from prompt.prompt import (STATUS_ACCEPT,
-            ...                                   STATUS_CANCEL)
+            >>> from .prompt import STATUS_ACCEPT, STATUS_CANCEL
             >>> prompt = MagicMock()
             >>> action = Action()
             >>> action.register_from_rules([
@@ -92,8 +90,7 @@ class Action:
                 (name, callback) tuple.
 
         Example:
-            >>> from prompt.prompt import (STATUS_ACCEPT,
-            ...                                   STATUS_CANCEL)
+            >>> from .prompt import STATUS_ACCEPT, STATUS_CANCEL
             >>> Action.from_rules([
             ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
             ...     ('prompt:cancel', lambda prompt: STATUS_CANCEL),
