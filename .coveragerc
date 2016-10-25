@@ -1,9 +1,9 @@
 [report]
 include =
-    rplugin/python3/*.py
+    neovim_prompt/*.py
     tests/*.py
 omit =
-    rplugin/python3/__init__.py
+    neovim_prompt/__init__.py
 exclude_lines =
     pragma: no cover
     if __name__ == .__main__.:

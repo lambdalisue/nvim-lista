@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# lista.nvim documentation build configuration file, created by
-# sphinx-quickstart on Wed Oct 19 04:16:34 2016.
+# neovim-prompt documentation build configuration file, created by
+# sphinx-quickstart on Mon Oct 17 02:31:01 2016.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -20,7 +20,7 @@
 import os
 import sys
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(BASE_DIR, 'rplugin/python3'))
+sys.path.insert(0, BASE_DIR)
 
 # -- General configuration ------------------------------------------------
 
@@ -55,7 +55,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'lista.nvim'
+project = 'neovim-prompt'
 copyright = '2016, lambdalisue'
 author = 'lambdalisue'
 
@@ -140,7 +140,7 @@ html_theme = 'alabaster'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = 'lista.nvim v0.1.0'
+# html_title = 'neovim-prompt v0.1.0'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -240,7 +240,7 @@ html_static_path = ['_static']
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'listanvimdoc'
+htmlhelp_basename = 'neovim-promptdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -266,7 +266,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'listanvim.tex', 'lista.nvim Documentation',
+    (master_doc, 'neovim-prompt.tex', 'neovim-prompt Documentation',
      'lambdalisue', 'manual'),
 ]
 
@@ -308,7 +308,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'listanvim', 'lista.nvim Documentation',
+    (master_doc, 'neovim-prompt', 'neovim-prompt Documentation',
      [author], 1)
 ]
 
@@ -323,8 +323,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'listanvim', 'lista.nvim Documentation',
-     author, 'listanvim', 'One line description of project.',
+    (master_doc, 'neovim-prompt', 'neovim-prompt Documentation',
+     author, 'neovim-prompt', 'One line description of project.',
      'Miscellaneous'),
 ]
 

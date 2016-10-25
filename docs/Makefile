@@ -91,9 +91,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/listanvim.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/neovim-prompt.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/listanvim.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/neovim-prompt.qhc"
 
 .PHONY: applehelp
 applehelp:
@@ -110,8 +110,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/listanvim"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/listanvim"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/neovim-prompt"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/neovim-prompt"
 	@echo "# devhelp"
 
 .PHONY: epub

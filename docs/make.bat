@@ -129,9 +129,9 @@ if "%1" == "qthelp" (
 	echo.
 	echo.Build finished; now you can run "qcollectiongenerator" with the ^
 .qhcp project file in %BUILDDIR%/qthelp, like this:
-	echo.^> qcollectiongenerator %BUILDDIR%\qthelp\listanvim.qhcp
+	echo.^> qcollectiongenerator %BUILDDIR%\qthelp\neovim-prompt.qhcp
 	echo.To view the help file:
-	echo.^> assistant -collectionFile %BUILDDIR%\qthelp\listanvim.ghc
+	echo.^> assistant -collectionFile %BUILDDIR%\qthelp\neovim-prompt.ghc
 	goto end
 )
 
