@@ -1,6 +1,5 @@
-from lista.prompt.prompt import (
-    Prompt, STATUS_ACCEPT,
-    INSERT_MODE_INSERT, INSERT_MODE_REPLACE,
+from lista.prompt.prompt import (  # type: ignore
+    Prompt, INSERT_MODE_INSERT,
 )
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher

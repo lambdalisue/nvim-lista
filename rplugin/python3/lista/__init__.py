@@ -14,7 +14,8 @@ except ImportError:
 
 
 def start(nvim, args):
-    from .lista import Lista, STATUS_ACCEPT
+    from .prompt.prompt import STATUS_ACCEPT
+    from .lista import Lista
     from .context import Context
     if '_lista_context' in nvim.current.buffer.vars:
         context = Context.from_dict(
