@@ -15,7 +15,7 @@ install:
 
 script:
   - py.test --cov
-  - mypy rplugin/python3
+  - mypy --silent-imports rplugin/python3
 
 after_success:
   - coveralls
