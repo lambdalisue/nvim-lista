@@ -16,7 +16,7 @@ install:
   - pip install coveralls
 
 script:
-  - pytest --doctest-modules --flake8 --cov
+  - py.test --doctest-modules --flake8 --cov
   - mypy --silent-imports .
 
 after_success:
