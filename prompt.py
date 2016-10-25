@@ -45,7 +45,7 @@ class Prompt:
 
         Args:
             nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
-            context (Context): A ``neovim_prompt.context.Context`` instance.
+            context (Context): A ``prompt.context.Context`` instance.
         """
         from .caret import Caret
         from .history import History
@@ -56,7 +56,7 @@ class Prompt:
         self.context = context
         self.caret = Caret(context)
         self.history = History(self)
-        self.action = copy.copy(DEFAULT_ACTION)     # type: ignore
+        self.action = copy.copy(DEFAULT_ACTION)
         self.keymap = Keymap.from_rules(nvim, DEFAULT_KEYMAP_RULES)
 
     @property
@@ -75,7 +75,7 @@ class Prompt:
         - on_term - Only once
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -118,7 +118,7 @@ class Prompt:
             text (str): A text which will be inserted after the caret.
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -146,7 +146,7 @@ class Prompt:
             text (str): A text which will be replaced after the caret.
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -173,7 +173,7 @@ class Prompt:
             text (str): A text which will be replaced after the caret.
 
         Example:
-            >>> from neovim_prompt.context import Context
+            >>> from prompt.context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
