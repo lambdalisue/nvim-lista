@@ -1,4 +1,7 @@
-from lista.prompt.prompt import Prompt
+from lista.prompt.prompt import (
+    Prompt, STATUS_ACCEPT,
+    INSERT_MODE_INSERT, INSERT_MODE_REPLACE,
+)
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 from .action import DEFAULT_ACTION_RULES, DEFAULT_ACTION_KEYMAP
@@ -42,7 +45,7 @@ class Lista(Prompt):
         self._indices = None
         self._previous = ''
         self.matcher = Indexer(
-            [AllMatcher(nvim), FuzzyMatcher(nvim)],
+            [FuzzyMatcher(nvim), AllMatcher(nvim)],
             index=context.matcher_index,
         )
         self.case = Indexer(CASES, index=context.case_index)
@@ -98,11 +101,23 @@ class Lista(Prompt):
         return super().on_init(default)
 
     def on_redraw(self):
+        if self.insert_mode == INSERT_MODE_INSERT:
+            insert_mode_name = 'insert'
+        else:
+            insert_mode_name = 'replace'
+
+        if self.case.current == CASE_IGNORE:
+            case_name = 'ignore'
+        elif self.case.current == CASE_NORMAL:
+            case_name = 'normal'
+        elif self.case.current == CASE_SMART:
+            case_name = 'smart'
+
         self.nvim.current.window.options['statusline'] = self.statusline % (
-            self.insert_mode.name.capitalize(),
-            self.insert_mode.name.upper(),
+            insert_mode_name.capitalize(),
+            insert_mode_name.upper(),
             self.matcher.current.name,
-            self.case.current.name,
+            case_name,
             len(self._indices),
             self._line_count,
         )
