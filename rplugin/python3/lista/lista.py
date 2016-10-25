@@ -1,24 +1,20 @@
-import sys
-from enum import Enum
-from typing import Optional, Sequence, Any  # noqa: F401
-from neovim import Nvim
-from neovim.api.buffer import Buffer  # noqa: F401
-from prompt.prompt import Prompt, Status
-from .matcher import AbstractMatcher  # noqa: F401
+from lista.prompt.prompt import Prompt
 from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 from .action import DEFAULT_ACTION_RULES, DEFAULT_ACTION_KEYMAP
-from .context import Context
 from .indexer import Indexer
 from .util import assign_content
 
 
-class Case(Enum):
-    """Case enum class."""
+CASE_SMART = 1
+CASE_IGNORE = 2
+CASE_NORMAL = 3
 
-    smart = 1
-    ignore = 2
-    normal = 3
+CASES = (
+    CASE_SMART,
+    CASE_IGNORE,
+    CASE_NORMAL,
+)
 
 
 class Lista(Prompt):
@@ -35,29 +31,26 @@ class Lista(Prompt):
     ])
 
     @property
-    def selected_line(self) -> int:
+    def selected_line(self):
         if len(self._indices) and self.context.selected_index >= 0:
             return self._indices[self.context.selected_index] + 1
         return 0
 
-    def __init__(self, nvim: Nvim, context: Context) -> None:
+    def __init__(self, nvim, context):
         super().__init__(nvim, context)
-        self._buffer = None  # type: Buffer
-        self._indices = None  # type: Sequence[int]
+        self._buffer = None
+        self._indices = None
         self._previous = ''
         self.matcher = Indexer(
             [AllMatcher(nvim), FuzzyMatcher(nvim)],
             index=context.matcher_index,
         )
-        self.case = Indexer(  # type: ignore
-            list(Case),
-            index=context.case_index,
-        )
+        self.case = Indexer(CASES, index=context.case_index)
         self.action.register_from_rules(DEFAULT_ACTION_RULES)
         self.keymap.register_from_rules(nvim, DEFAULT_ACTION_KEYMAP)
         self.apply_custom_mappings_from_vim_variable('lista#custom_mappings')
 
-    def start(self, default: str) -> int:
+    def start(self, default):
         bufhidden = self.nvim.current.buffer.options['bufhidden']
         self.nvim.current.buffer.options['bufhidden'] = 'hide'
         try:
@@ -65,24 +58,24 @@ class Lista(Prompt):
         finally:
             self.nvim.current.buffer.options['bufhidden'] = bufhidden
 
-    def switch_matcher(self) -> None:
+    def switch_matcher(self):
         self.matcher.current.remove_highlight()
         self.matcher.next()
         self._previous = ''
 
-    def switch_case(self) -> None:
+    def switch_case(self):
         self.case.next()
         self._previous = ''
 
-    def get_ignorecase(self) -> bool:
-        if self.case.current is Case.ignore:
+    def get_ignorecase(self):
+        if self.case.current is CASE_IGNORE:
             return True
-        elif self.case.current is Case.normal:
+        elif self.case.current is CASE_NORMAL:
             return False
-        elif self.case.current is Case.smart:
+        elif self.case.current is CASE_SMART:
             return not any(c.isupper() for c in self.text)
 
-    def on_init(self, default: str) -> Optional[Status]:
+    def on_init(self, default):
         self._buffer = self.nvim.current.buffer
         self._content = self._buffer[:]
         self._line_count = len(self._content)
@@ -100,11 +93,11 @@ class Lista(Prompt):
         self.nvim.current.window.options['cursorline'] = True
         self.nvim.current.window.options['cursorcolumn'] = False
         self.nvim.command('set syntax=lista')
-        self.nvim.call('cursor', [self.context.selected_index+1, 0])
+        self.nvim.call('cursor', [self.context.selected_index + 1, 0])
         self.nvim.command('normal! zvzz')
         return super().on_init(default)
 
-    def on_redraw(self) -> None:
+    def on_redraw(self):
         self.nvim.current.window.options['statusline'] = self.statusline % (
             self.insert_mode.name.capitalize(),
             self.insert_mode.name.upper(),
@@ -116,7 +109,7 @@ class Lista(Prompt):
         self.nvim.command('redrawstatus')
         return super().on_redraw()
 
-    def on_update(self, status: Status) -> Optional[Status]:
+    def on_update(self, status):
         previous = self._previous
         self._previous = self.text
 
@@ -144,7 +137,7 @@ class Lista(Prompt):
         assign_content(self.nvim, [self._content[i] for i in self._indices])
         return super().on_update(status)
 
-    def on_term(self, status: Status) -> Status:
+    def on_term(self, status):
         self.matcher.current.remove_highlight()
         self.nvim.command('echo "%s" | redraw' % (
             "\n" * self.nvim.options['cmdheight']

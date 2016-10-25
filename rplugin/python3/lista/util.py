@@ -1,8 +1,10 @@
-from typing import List
-from neovim import Nvim
+def assign_content(nvim, content):
+    """Assign content to the current buffer.
 
-
-def assign_content(nvim: Nvim, content: List[str]) -> None:
+    Args:
+        nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
+        content (str): A str content.
+    """
     viewinfo = nvim.call('winsaveview')
     nvim.current.buffer.options['modifiable'] = True
     nvim.current.buffer[:] = content

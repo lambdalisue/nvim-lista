@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 import pytest
-from prompt.action import Action
+from lista.prompt.action import Action
 from lista.action import DEFAULT_ACTION_RULES, DEFAULT_ACTION_KEYMAP
 
 
