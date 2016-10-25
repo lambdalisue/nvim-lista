@@ -1,6 +1,6 @@
 class Indexer:
     """An indexer class."""
-    def __init__(self, candidates, index):
+    def __init__(self, candidates, index=0):
         """Constructor.
 
         Args:
@@ -57,7 +57,7 @@ class Indexer:
         """
         return self.candidates[self.index]
 
-    def next(self, offset):
+    def next(self, offset=1):
         """Select next candidate and return.
 
         Example:
@@ -78,7 +78,7 @@ class Indexer:
         self.index += offset
         return self.current
 
-    def previous(self, offset):
+    def previous(self, offset=1):
         """Select previous candidate and return.
 
         Example:
