@@ -28,7 +28,7 @@ class Keymap:
             nowait (bool): A boolean to indicate nowait in Vim.
 
         Example:
-            >>> from prompt.keystroke import Keystroke
+            >>> from .keystroke import Keystroke
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -66,7 +66,7 @@ class Keymap:
                 ``Key.register`` method.
 
         Example:
-            >>> from prompt.keystroke import Keystroke
+            >>> from .keystroke import Keystroke
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -108,7 +108,7 @@ class Keymap:
             rules (tuple): A tuple of rules.
 
         Example:
-            >>> from prompt.keystroke import Keystroke
+            >>> from .keystroke import Keystroke
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -136,7 +136,7 @@ class Keymap:
             lhs (Keystroke): A left hand side Keystroke instance.
 
         Example:
-            >>> from prompt.keystroke import Keystroke
+            >>> from .keystroke import Keystroke
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -188,7 +188,7 @@ class Keymap:
                 are multiple keystroke instances are matched.
 
         Example:
-            >>> from prompt.keystroke import Keystroke
+            >>> from .keystroke import Keystroke
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -307,7 +307,7 @@ class Keymap:
             rules (tuple): A tuple of rules.
 
         Example:
-            >>> from prompt.keystroke import Keystroke
+            >>> from .keystroke import Keystroke
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}

@@ -95,7 +95,7 @@ class Action:
             ...     ('prompt:accept', lambda prompt: STATUS_ACCEPT),
             ...     ('prompt:cancel', lambda prompt: STATUS_CANCEL),
             ... ])
-            <prompt.action.Action object at ...>
+            <....action.Action object at ...>
 
         Returns:
             Action: An action instance.

@@ -75,7 +75,7 @@ class Prompt:
         - on_term - Only once
 
         Example:
-            >>> from prompt.context import Context
+            >>> from .context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -118,7 +118,7 @@ class Prompt:
             text (str): A text which will be inserted after the caret.
 
         Example:
-            >>> from prompt.context import Context
+            >>> from .context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -146,7 +146,7 @@ class Prompt:
             text (str): A text which will be replaced after the caret.
 
         Example:
-            >>> from prompt.context import Context
+            >>> from .context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
@@ -173,7 +173,7 @@ class Prompt:
             text (str): A text which will be replaced after the caret.
 
         Example:
-            >>> from prompt.context import Context
+            >>> from .context import Context
             >>> from unittest.mock import MagicMock
             >>> nvim = MagicMock()
             >>> nvim.options = {'encoding': 'utf-8'}
