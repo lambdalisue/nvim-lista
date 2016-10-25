@@ -23,18 +23,15 @@ def test_prompt_apply_custom_mappings_from_vim_variable(prompt):
     nvim = prompt.nvim
     nvim.vars = {
         'prompt#custom_mappings': [
-            ('<C-H>', '<BS>'),
             ('<C-D>', '<DEL>'),
         ]
     }
 
     # Fail silently
     prompt.apply_custom_mappings_from_vim_variable('does_not_exist')
-    assert Keystroke.parse(nvim, '<C-H>') not in prompt.keymap.registry
     assert Keystroke.parse(nvim, '<C-D>') not in prompt.keymap.registry
 
     prompt.apply_custom_mappings_from_vim_variable('prompt#custom_mappings')
-    assert Keystroke.parse(nvim, '<C-H>') in prompt.keymap.registry
     assert Keystroke.parse(nvim, '<C-D>') in prompt.keymap.registry
 
 
