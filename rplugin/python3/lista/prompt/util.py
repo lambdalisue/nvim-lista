@@ -1,11 +1,9 @@
 """Utility module."""
-from typing import AnyStr, Union
-from neovim import Nvim
 
-_cached_encoding = None     # type: str
+_cached_encoding = None
 
 
-def get_encoding(nvim: Nvim) -> str:
+def get_encoding(nvim):
     """Return a Vim's internal encoding.
 
     The retrieve encoding is cached to the function instance while encoding
@@ -24,7 +22,7 @@ def get_encoding(nvim: Nvim) -> str:
     return _cached_encoding
 
 
-def ensure_bytes(nvim: Nvim, seed: AnyStr) -> bytes:
+def ensure_bytes(nvim, seed):
     """Encode `str` to `bytes` if necessary and return.
 
     Args:
@@ -49,7 +47,7 @@ def ensure_bytes(nvim: Nvim, seed: AnyStr) -> bytes:
     return seed
 
 
-def ensure_str(nvim: Nvim, seed: AnyStr) -> str:
+def ensure_str(nvim, seed):
     """Decode `bytes` to `str` if necessary and return.
 
     Args:
@@ -74,7 +72,7 @@ def ensure_str(nvim: Nvim, seed: AnyStr) -> str:
     return seed
 
 
-def int2char(nvim: Nvim, code: int) -> str:
+def int2char(nvim, code):
     """Return a corresponding char of `code`.
 
     It uses "nr2char()" in Vim script when 'encoding' option is not utf-8.
@@ -100,14 +98,14 @@ def int2char(nvim: Nvim, code: int) -> str:
     return nvim.call('nr2char', code)
 
 
-def int2repr(nvim: Nvim, code: Union[int, bytes]) -> str:
+def int2repr(nvim, code):
     from .key import Key
     if isinstance(code, int):
         return int2char(nvim, code)
     return Key.represent(nvim, ensure_bytes(nvim, code))
 
 
-def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
+def getchar(nvim, *args):
     """Call getchar and return int or bytes instance.
 
     Args:
@@ -133,7 +131,7 @@ def getchar(nvim: Nvim, *args) -> Union[int, bytes]:
         raise e
 
 
-def safeget(l: list, index: int, default=None):
+def safeget(l, index, default=None):
     """Return an index item of list or default."""
     try:
         return l[index]
