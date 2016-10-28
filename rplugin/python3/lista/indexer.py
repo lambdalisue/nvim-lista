@@ -1,12 +1,6 @@
-from typing import Sequence, TypeVar, Generic
-
-
-T = TypeVar('T')
-
-
-class Indexer(Generic[T]):
+class Indexer:
     """An indexer class."""
-    def __init__(self, candidates: Sequence[T], index: int=0) -> None:
+    def __init__(self, candidates, index=0):
         """Constructor.
 
         Args:
@@ -45,12 +39,12 @@ class Indexer(Generic[T]):
         return self._index
 
     @index.setter
-    def index(self, value: int):
+    def index(self, value):
         value = value % len(self.candidates)
         self._index = value
 
     @property
-    def current(self) -> T:
+    def current(self):
         """Any: A current candidate.
 
         Example:
@@ -63,7 +57,7 @@ class Indexer(Generic[T]):
         """
         return self.candidates[self.index]
 
-    def next(self, offset: int=1) -> T:
+    def next(self, offset=1):
         """Select next candidate and return.
 
         Example:
@@ -84,7 +78,7 @@ class Indexer(Generic[T]):
         self.index += offset
         return self.current
 
-    def previous(self, offset: int=1) -> T:
+    def previous(self, offset=1):
         """Select previous candidate and return.
 
         Example:

@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from unittest.mock import MagicMock
 import pytest
-from lista.matcher import AbstractMatcher, escape_vim_patterns
+from lista.matcher.base import AbstractMatcher, escape_vim_patterns
 
 
 @pytest.fixture

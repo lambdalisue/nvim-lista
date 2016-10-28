@@ -21,13 +21,7 @@ Introductions
 Install
 -------------------------------------------------------------------------------
 
-The prompt interface is provided by [lambdalisue/neovim-prompt](https://github.com/lambdalisue/neovim-prompt) so first you need to install that dependency.
-
-```sh
-$ pip install neovim-prompt
-```
-
-And then install it with your favorite plugin manager.
+Install it with your favorite plugin manager.
 
 ```vim
 Plug 'lambdalisue/lista.nvim'
@@ -42,13 +36,9 @@ Execute `:Lista` or `:ListaCursorWord` and use the following builtin mappings
 Key		| Description
 --------------- | ---------------------------------------------------------------
 `<CR>`		| Accept the input and return the value
-`<C-M>`		| Accept the input and return the value
 `<Esc>`		| Cancel the input and return 0
-`<C-[>`		| Cancel the input and return 0
 `<BS>`		| Delete a character before the cursor
-`<C-H>`		| Delete a character before the cursor
 `<Del>`		| Delete a character under the cursor
-`<C-D>`		| Delete a character under the cursor
 `<Left>`	| Move a cursor left
 `<Right>`	| Move a cursor right
 `<Home>`	| Move a cursor to the head
@@ -62,19 +52,11 @@ Key		| Description
 `<C-T>`		| Select a previous line of the buffer
 `<C-G>`		| Select a next line of the buffer
 `<C-R>`		| Insert the contents of a register or object under the cursor as if typed
+`<C-V>`		| Start to input a control character
+`<C-K>`		| Start to input a digraph
+`<Insert>`	| Toggle insert/replace mode
 `<C-^>`		| Switch a current matcher
 `<C-I>`		| Switch ignorecase
-`<Insert>`	| Toggle insert/replace mode
-
-And the following Emacs-like custom mappings which is defined by `g:lista#custom_mapping`
-
-Key		| Description
---------------- | ---------------------------------------------------------------
-`<C-D>`		| Delete character under the cursor
-`<C-F>`		| Move a cursor left
-`<C-B>`		| Move a cursor right
-`<C-A>`		| Move a cursor to the head
-`<C-E>`		| Shift a cursor to the end
 
 I personally assign the command to `#` and `g#` like:
 
@@ -87,6 +69,11 @@ If you prefer to use `<C-n>/<C-p>` to select candidate like denite.nvim, use
 
 ```vim
 let g:prompt#custom_mapping = [
+      \ ['<C-f>', '<Left>'],
+      \ ['<C-b>', '<Right>'],
+      \ ['<C-a>', '<Home>'],
+      \ ['<C-e>', '<End>'],
+      \ ['<C-d>', '<Del>'],
       \ ["\<C-P>", "\<C-T>", 1],  " 1 means 'noremap'
       \ ["\<C-N>", "\<C-G>", 1],
       \]
@@ -102,3 +89,4 @@ This plugin has partially forked from or inspired by the following plugins.
 - [Shougo/unite.vim](https://github.com/Shougo/unite.vim)
 - [osyo-manga/vim-hopping](https://github.com/osyo-manga/vim-hopping)
 - [Shougo/denite.nvim](https://github.com/Shougo/denite.nvim)
+- [lambdalisue/neovim-prompt](https://github.com/lambdalisue/neovim-prompt)
