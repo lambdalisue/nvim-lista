@@ -192,8 +192,29 @@ def _move_caret_to_left(prompt):
     prompt.caret.locus -= 1
 
 
+def _move_caret_to_one_word_left(prompt):
+    # Use vim's substitute to respect 'iskeyword'
+    original_text = prompt.caret.get_backward_text()
+    substituted_text = prompt.nvim.call(
+        'substitute',
+        original_text, '\k\+\s\?$', '', '',
+    )
+    offset = len(original_text) - len(substituted_text)
+    prompt.caret.locus -= 1 if not offset else offset
+
+
 def _move_caret_to_right(prompt):
     prompt.caret.locus += 1
+
+
+def _move_caret_to_one_word_right(prompt):
+    # Use vim's substitute to respect 'iskeyword'
+    original_text = prompt.caret.get_forward_text()
+    substituted_text = prompt.nvim.call(
+        'substitute',
+        original_text, '^\k\+', '', '',
+    )
+    prompt.caret.locus += 1 + len(original_text) - len(substituted_text)
 
 
 def _move_caret_to_head(prompt):
@@ -285,7 +306,9 @@ DEFAULT_ACTION = Action.from_rules([
     ('prompt:delete_text_after_caret', _delete_text_after_caret),
     ('prompt:delete_entire_text', _delete_entire_text),
     ('prompt:move_caret_to_left', _move_caret_to_left),
+    ('prompt:move_caret_to_one_word_left', _move_caret_to_one_word_left),
     ('prompt:move_caret_to_right', _move_caret_to_right),
+    ('prompt:move_caret_to_one_word_right', _move_caret_to_one_word_right),
     ('prompt:move_caret_to_head', _move_caret_to_head),
     ('prompt:move_caret_to_lead', _move_caret_to_lead),
     ('prompt:move_caret_to_tail', _move_caret_to_tail),
