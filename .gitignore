@@ -1,5 +1,3 @@
-docs/
-prompt/
-test/
+docs/_build
 ci-test/
-.coverage
+module/
