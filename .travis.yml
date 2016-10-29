@@ -7,11 +7,11 @@ python:
 
 install:
   - pip install coveralls
-  - git worktree add ./ci-test ci-test
+  - git worktree add ci-test
 
 script:
   - cd ci-test
-  - sh ./scripts/runs.sh
+  - sh ./scripts/test.sh
 
 after_success:
   - coveralls
