@@ -8,11 +8,12 @@ from .keystroke import Keystroke
 from .util import getchar
 
 
-DefinitionBase = namedtuple('Definition', [
+DefinitionBase = namedtuple('DefinitionBase', [
     'lhs',
     'rhs',
     'noremap',
     'nowait',
+    'expr',
 ])
 
 
@@ -21,8 +22,8 @@ class Definition(DefinitionBase):
 
     __slots__ = ()
 
-    def __new__(cls, lhs, rhs, noremap=False, nowait=False):
-        return super().__new__(cls, lhs, rhs, noremap, nowait)
+    def __new__(cls, lhs, rhs, noremap=False, nowait=False, expr=False):
+        return super().__new__(cls, lhs, rhs, noremap, nowait, expr)
 
     @classmethod
     def parse(cls, nvim, rule):
@@ -41,7 +42,7 @@ class Definition(DefinitionBase):
         flags = flags.split()
         kwargs = {}
         for flag in flags:
-            if flag not in ['noremap', 'nowait']:
+            if flag not in ['noremap', 'nowait', 'expr']:
                 raise AttributeError(
                     'Unknown flag "%s" has specified.' % flag
                 )
@@ -201,10 +202,11 @@ class Keymap:
         )
         return sorted(candidates, key=itemgetter(0))
 
-    def resolve(self, lhs, nowait=False):
+    def resolve(self, nvim, lhs, nowait=False):
         """Resolve ``lhs`` Keystroke instance and return resolved keystroke.
 
         Args:
+            nvim (neovim.Nvim): A ``neovim.Nvim`` instance.
             lhs (Keystroke): A left hand side Keystroke instance.
             nowait (bool): Return a first exact matched keystroke even there
                 are multiple keystroke instances are matched.
@@ -229,31 +231,31 @@ class Keymap:
             ...     ('<C-D><C-B>', '<prompt:D2>'),
             ... ])
             >>> # No mapping starts from <C-C> so <C-C> is returned
-            >>> keymap.resolve(k('<C-Z>'))
+            >>> keymap.resolve(nvim, k('<C-Z>'))
             (Key(code=26, ...),)
             >>> # No single keystroke is resolved in the following case so None
             >>> # will be returned.
-            >>> keymap.resolve(k('')) is None
+            >>> keymap.resolve(nvim, k('')) is None
             True
-            >>> keymap.resolve(k('<C-A>')) is None
+            >>> keymap.resolve(nvim, k('<C-A>')) is None
             True
             >>> # A single keystroke is resolved so rhs is returned.
             >>> # will be returned.
-            >>> keymap.resolve(k('<C-A><C-A>'))
+            >>> keymap.resolve(nvim, k('<C-A><C-A>'))
             (Key(code=b'<prompt:A>', ...),)
-            >>> keymap.resolve(k('<C-A><C-B>'))
+            >>> keymap.resolve(nvim, k('<C-A><C-B>'))
             (Key(code=b'<prompt:B>', ...),)
             >>> # noremap = False so recursively resolved
-            >>> keymap.resolve(k('<C-B><C-A>'))
+            >>> keymap.resolve(nvim, k('<C-B><C-A>'))
             (Key(code=b'<prompt:A>', ...),)
             >>> # noremap = True so resolved only once
-            >>> keymap.resolve(k('<C-B><C-B>'))
+            >>> keymap.resolve(nvim, k('<C-B><C-B>'))
             (Key(code=1, ...), Key(code=2, ...))
             >>> # nowait = False so no single keystroke could be resolved.
-            >>> keymap.resolve(k('<C-C>')) is None
+            >>> keymap.resolve(nvim, k('<C-C>')) is None
             True
             >>> # nowait = True so the first matched candidate is returned.
-            >>> keymap.resolve(k('<C-D>'))
+            >>> keymap.resolve(nvim, k('<C-D>'))
             (Key(code=b'<prompt:D>', ...),)
 
         Returns:
@@ -269,24 +271,27 @@ class Keymap:
         elif n == 1:
             definition = candidates[0]
             if definition.lhs == lhs:
-                if definition.noremap:
-                    return definition.rhs
-                return self.resolve(definition.rhs, nowait=True)
+                return self._resolve(nvim, definition)
         elif nowait:
             # Use the first matched candidate if lhs is equal
             definition = candidates[0]
             if definition.lhs == lhs:
-                if definition.noremap:
-                    return definition.rhs
-                return self.resolve(definition.rhs, nowait=True)
+                return self._resolve(nvim, definition)
         else:
             # Check if the current first candidate is defined as nowait
             definition = candidates[0]
             if definition.nowait and definition.lhs == lhs:
-                if definition.noremap:
-                    return definition.rhs
-                return self.resolve(definition.rhs, nowait=True)
+                return self._resolve(nvim, definition)
         return None
+
+    def _resolve(self, nvim, definition):
+        if definition.expr:
+            rhs = nvim.eval(definition.rhs)
+        else:
+            rhs = definition.rhs
+        if definition.noremap:
+            return rhs
+        return self.resolve(nvim, rhs, nowait=True)
 
     def harvest(self, nvim, timeoutlen):
         """Harvest a keystroke from getchar in Vim and return resolved.
@@ -319,9 +324,9 @@ class Keymap:
                 continue
             elif code is None:
                 # timeout
-                return self.resolve(previous, nowait=True) or previous
+                return self.resolve(nvim, previous, nowait=True) or previous
             previous = Keystroke((previous or ()) + (Key.parse(nvim, code),))
-            keystroke = self.resolve(previous, nowait=False)
+            keystroke = self.resolve(nvim, previous, nowait=False)
             if keystroke:
                 # resolved
                 return keystroke
