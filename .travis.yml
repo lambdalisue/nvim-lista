@@ -7,7 +7,7 @@ python:
 
 install:
   - pip install coveralls
-  - git clone --single-branch -b ci-test https://github.com/lambdalisue/neovim-prompt ci-test
+  - git clone --depth 1 --single-branch -b ci-test https://github.com/lambdalisue/neovim-prompt ci-test
 
 script:
   - cd ci-test
