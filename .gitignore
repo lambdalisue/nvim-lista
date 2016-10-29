@@ -1,4 +1,5 @@
 docs/
 prompt/
 test/
+ci-test/
 .coverage
