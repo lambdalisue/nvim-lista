@@ -28,7 +28,7 @@ class Lista(Prompt):
         '%%#ListaStatuslineFile# %%f ',
         '%%#ListaStatuslineMiddle#%%=',
         '%%#ListaStatuslineMatcher# Matcher: %s (C-^ to switch) ',
-        '%%#ListaStatuslineMatcher# Case: %s (C-I to switch) ',
+        '%%#ListaStatuslineMatcher# Case: %s (C-_ to switch) ',
         '%%#ListaStatuslineIndicator# %d/%d ',
     ])
 

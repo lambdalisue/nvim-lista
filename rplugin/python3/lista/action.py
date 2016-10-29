@@ -25,11 +25,14 @@ DEFAULT_ACTION_RULES = [
 
 
 DEFAULT_ACTION_KEYMAP = [
-    ('<PageUp>', '<lista:select_previous_candidate>', True),
-    ('<PageDown>', '<lista:select_next_candidate>', True),
-    ('<C-T>', '<lista:select_previous_candidate>', True),
-    ('<C-G>', '<lista:select_next_candidate>', True),
-    ('<C-^>', '<lista:switch_matcher>', True),
-    ('<C-6>', '<lista:switch_matcher>', True),
-    ('<C-I>', '<lista:switch_case>', True),
+    ('<PageUp>', '<lista:select_previous_candidate>', 'noremap'),
+    ('<PageDown>', '<lista:select_next_candidate>', 'noremap'),
+    ('<C-T>', '<lista:select_previous_candidate>', 'noremap'),
+    ('<C-G>', '<lista:select_next_candidate>', 'noremap'),
+    ('<S-Tab>', '<lista:select_previous_candidate>', 'noremap'),
+    ('<Tab>', '<lista:select_next_candidate>', 'noremap'),
+    ('<C-^>', '<lista:switch_matcher>', 'noremap'),
+    ('<C-6>', '<lista:switch_matcher>', 'noremap'),
+    ('<C-_>', '<lista:switch_case>', 'noremap'),
+    ('<C-->', '<lista:switch_case>', 'noremap'),
 ]
