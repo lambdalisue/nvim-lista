@@ -1,4 +1,5 @@
 """Action module."""
+import re
 from .prompt import STATUS_PROGRESS
 from .digraph import Digraph
 from .util import safeget, int2char, int2repr, getchar
@@ -68,10 +69,20 @@ class Action:
             ... ])
             >>> action.call(prompt, 'prompt:accept')
             1
+            >>> action.call(prompt, 'unknown:accept')
+            1
+            >>> action.call(prompt, 'unknown:unknown')
+            Traceback (most recent call last):
+              ...
+            AttributeError: No action "unknown:unknown" has registered.
 
         Returns:
             None or int: None or int which represent the prompt status.
         """
+        alternative_name = re.sub(r'[^:]+:(.*)', r'prompt:\1', name)
+        if name not in self.registry and alternative_name in self.registry:
+            # fallback to the prompt's builtin action
+            name = alternative_name
         if name in self.registry:
             fn = self.registry[name]
             return fn(prompt)
