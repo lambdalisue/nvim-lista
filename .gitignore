@@ -1,3 +1,3 @@
 docs/_build
-ci-test/
-module/
+ci-test
+module
