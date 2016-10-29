@@ -7,6 +7,7 @@ neovim-prompt
 ![Support Neovim 0.1.6 or above](https://img.shields.io/badge/support-Neovim%200.1.6%20or%20above-green.svg?style=flat-square)
 ![Support Vim 8.0 or above](https://img.shields.io/badge/support-Vim%208.0.0%20or%20above-yellowgreen.svg?style=flat-square)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE.md)
+[![Documentation Status](https://readthedocs.org/projects/neovim-prompt/badge/?version=latest)](http://neovim-prompt.readthedocs.io/en/latest/?badge=latest)
 
 
 A customizable command-line prompt module for Neovim/Vim.
