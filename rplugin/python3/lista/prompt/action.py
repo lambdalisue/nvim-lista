@@ -1,8 +1,7 @@
 """Action module."""
 import re
-from .prompt import STATUS_PROGRESS
 from .digraph import Digraph
-from .util import safeget, int2char, int2repr, getchar
+from .util import int2char, int2repr, getchar
 
 
 class Action:
@@ -86,8 +85,6 @@ class Action:
         if name in self.registry:
             fn = self.registry[name]
             return fn(prompt)
-        elif name.startswith('call:'):
-            return _call(prompt, name[5:])
         raise AttributeError(
             'No action "%s" has registered.' % name
         )
@@ -114,25 +111,6 @@ class Action:
         action = cls()
         action.register_from_rules(rules)
         return action
-
-
-# Special actions -------------------------------------------------------------
-def _call(prompt, fname):
-    result = prompt.nvim.call(fname, prompt.context.to_dict())
-    if result is None:
-        return STATUS_PROGRESS
-    elif isinstance(result, int):
-        return result
-    elif isinstance(result, dict):
-        prompt.context.extend(result)
-    elif isinstance(result, (list, tuple)):
-        status = safeget(result, 0, default=STATUS_PROGRESS)
-        prompt.context.extend(safeget(result, 1, default={}))
-        return status
-    else:
-        raise AttributeError(
-            "A function '%s' does not return a correct value." % fname
-        )
 
 
 # Default actions -------------------------------------------------------------
