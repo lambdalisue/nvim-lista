@@ -36,19 +36,32 @@ Execute `:Lista` or `:ListaCursorWord` and use the following builtin mappings
 Key		| Description
 --------------- | ---------------------------------------------------------------
 `<CR>`		| Accept the input and return the value
+`<C-J>`		| Accept the input and return the value
+`<C-M>`		| Accept the input and return the value
 `<Esc>`		| Cancel the input and return 0
+`<C-[>`		| Cancel the input and return 0
 `<BS>`		| Delete a character before the cursor
+`<C-H>`		| Delete a character before the cursor
+`<C-W>`		| Delete a word before the cursor
 `<Del>`		| Delete a character under the cursor
 `<Left>`	| Move a cursor left
+`<S-Left>`	| Move a cursor one word left
+`<C-Left>`	| Move a cursor one word left
 `<Right>`	| Move a cursor right
+`<S-Right>`	| Move a cursor one word left
+`<C-Right>`	| Move a cursor one word left
 `<Home>`	| Move a cursor to the head
 `<End>`		| Move a cursor to the tail
 `<Up>`		| Recall previous command-line from history that matches pattern in front of the cursor
 `<Down>`	| Recall next command-line from history that matches pattern in front of the cursor
+`<S-Up>`	| Recall previous command-line from history
+`<S-Down>`	| Recall next command-line from history
 `<C-P>`		| Recall previous command-line from history
 `<C-N>`		| Recall next command-line from history
 `<PageUp>`	| Select a previous line of the buffer
 `<PageDown>`	| Select a next line of the buffer
+`<S-Tab>`	| Select a previous line of the buffer
+`<Tab>`		| Select a next line of the buffer
 `<C-T>`		| Select a previous line of the buffer
 `<C-G>`		| Select a next line of the buffer
 `<C-R>`		| Insert the contents of a register or object under the cursor as if typed
@@ -56,7 +69,9 @@ Key		| Description
 `<C-K>`		| Start to input a digraph
 `<Insert>`	| Toggle insert/replace mode
 `<C-^>`		| Switch a current matcher
-`<C-I>`		| Switch ignorecase
+`<C-6>`		| Switch a current matcher
+`<C-_>`		| Switch ignorecase
+`<C-->`		| Switch ignorecase
 
 I personally assign the command to `#` and `g#` like:
 
@@ -74,10 +89,13 @@ let g:prompt#custom_mapping = [
       \ ['<C-a>', '<Home>'],
       \ ['<C-e>', '<End>'],
       \ ['<C-d>', '<Del>'],
-      \ ["\<C-P>", "\<C-T>", 1],  " 1 means 'noremap'
-      \ ["\<C-N>", "\<C-G>", 1],
+      \ ['<C-P>', '<lista:select_previous_candidate>', 'noremap'],
+      \ ['<C-N>', '<lista:select_next_candidate>', 'noremap'],
+      \ [';', 'pinkyless#stickyshift#enter(";")', 'expr noremap'],
       \]
 ```
+
+- [lambdalisue/pinkyless.vim](https://github.com/lambdalisue/pinkyless.vim)
 
 Note that multi-byte characters are not supported only in GVim.
 
