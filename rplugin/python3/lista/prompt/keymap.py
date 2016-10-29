@@ -23,6 +23,10 @@ class Definition(DefinitionBase):
     __slots__ = ()
 
     def __new__(cls, lhs, rhs, noremap=False, nowait=False, expr=False):
+        if expr and not isinstance(rhs, str):
+            raise AttributeError(
+                '"rhs" of "expr" mapping requires to be a str.'
+            )
         return super().__new__(cls, lhs, rhs, noremap, nowait, expr)
 
     @classmethod
@@ -37,8 +41,6 @@ class Definition(DefinitionBase):
             raise AttributeError(
                 'To many arguments are specified.'
             )
-        lhs = Keystroke.parse(nvim, lhs)
-        rhs = Keystroke.parse(nvim, rhs)
         flags = flags.split()
         kwargs = {}
         for flag in flags:
@@ -47,6 +49,9 @@ class Definition(DefinitionBase):
                     'Unknown flag "%s" has specified.' % flag
                 )
             kwargs[flag] = True
+        lhs = Keystroke.parse(nvim, lhs)
+        if not kwargs.get('expr', False):
+            rhs = Keystroke.parse(nvim, rhs)
         return cls(lhs, rhs, **kwargs)
 
 
