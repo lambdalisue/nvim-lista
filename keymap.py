@@ -286,7 +286,7 @@ class Keymap:
 
     def _resolve(self, nvim, definition):
         if definition.expr:
-            rhs = nvim.eval(definition.rhs)
+            rhs = Keystroke.parse(nvim, nvim.eval(definition.rhs))
         else:
             rhs = definition.rhs
         if definition.noremap:
