@@ -158,11 +158,10 @@ def _delete_word_before_caret(prompt):
     if prompt.caret.locus == 0:
         return
     # Use vim's substitute to respect 'iskeyword'
-    original_backward_text = prompt.caret.get_backward_text(),
+    original_backward_text = prompt.caret.get_backward_text()
     backward_text = prompt.nvim.call(
         'substitute',
-        original_backward_text,
-        '\k\+$', ''
+        original_backward_text, '\k\+\s*$', '', '',
     )
     prompt.context.text = ''.join([
         backward_text,
