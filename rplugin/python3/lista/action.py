@@ -1,18 +1,18 @@
-def _select_next_candidate(lista):
+def _select_next_candidate(lista, params):
     line, col = lista.nvim.current.window.cursor
     lista.nvim.call('cursor', [line + 1, col])
 
 
-def _select_previous_candidate(lista):
+def _select_previous_candidate(lista, params):
     line, col = lista.nvim.current.window.cursor
     lista.nvim.call('cursor', [line - 1, col])
 
 
-def _switch_matcher(lista):
+def _switch_matcher(lista, params):
     lista.switch_matcher()
 
 
-def _switch_case(lista):
+def _switch_case(lista, params):
     lista.switch_case()
 
 

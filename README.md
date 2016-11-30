@@ -35,11 +35,11 @@ Execute `:Lista` or `:ListaCursorWord` and use the following builtin mappings
 
 Key		| Description
 --------------- | ---------------------------------------------------------------
-`<CR>`		| Accept the input and return the value
-`<C-J>`		| Accept the input and return the value
-`<C-M>`		| Accept the input and return the value
-`<Esc>`		| Cancel the input and return 0
-`<C-[>`		| Cancel the input and return 0
+`<CR>`		| Accept the input and jump to the selected line
+`<C-J>`		| Accept the input and jump to the selected line
+`<C-M>`		| Accept the input and jump to the selected line
+`<Esc>`		| Cancel the input and return to the original line
+`<C-[>`		| Cancel the input and return to the original line
 `<BS>`		| Delete a character before the cursor
 `<C-H>`		| Delete a character before the cursor
 `<C-W>`		| Delete a word before the cursor
@@ -80,10 +80,10 @@ nnoremap # :<C-u>Lista<CR>
 nnoremap g# :<C-u>ListaCursorWord<CR>
 ```
 
-If you prefer to use `<C-n>/<C-p>` to select candidate like denite.nvim, use
+If you prefer to use `<C-n>/<C-p>` to select candidate, use
 
 ```vim
-let g:prompt#custom_mapping = [
+let g:lista#custom_mapping = [
       \ ['<C-f>', '<Left>'],
       \ ['<C-b>', '<Right>'],
       \ ['<C-a>', '<Home>'],
@@ -96,8 +96,6 @@ let g:prompt#custom_mapping = [
 ```
 
 - [lambdalisue/pinkyless.vim](https://github.com/lambdalisue/pinkyless.vim)
-
-Note that multi-byte characters are not supported only in GVim.
 
 
 See also
