@@ -1,3 +1,4 @@
+import os
 from collections import namedtuple
 from lista.prompt.prompt import (  # type: ignore
     INSERT_MODE_INSERT,
@@ -37,7 +38,7 @@ class Lista(Prompt):
 
     statusline = ''.join([
         '%%#ListaStatuslineMode%s# %s ',
-        '%%#ListaStatuslineFile# %%f ',
+        '%%#ListaStatuslineFile# %s ',
         '%%#ListaStatuslineMiddle#%%=',
         '%%#ListaStatuslineMatcher# Matcher: %s (C-^ to switch) ',
         '%%#ListaStatuslineMatcher# Case: %s (C-_ to switch) ',
@@ -96,6 +97,7 @@ class Lista(Prompt):
 
     def on_init(self):
         self._buffer = self.nvim.current.buffer
+        self._buffer_name = self.nvim.eval('simplify(expand("%:~:."))')
         self._content = self._buffer[:]
         self._line_count = len(self._content)
         self._indices = list(range(self._line_count))
@@ -132,6 +134,7 @@ class Lista(Prompt):
         self.nvim.current.window.options['statusline'] = self.statusline % (
             insert_mode_name.capitalize(),
             insert_mode_name.upper(),
+            self._buffer_name,
             self.matcher.current.name,
             case_name,
             len(self._indices),
