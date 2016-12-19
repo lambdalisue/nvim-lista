@@ -1,4 +1,3 @@
-import os
 from collections import namedtuple
 from lista.prompt.prompt import (  # type: ignore
     INSERT_MODE_INSERT,

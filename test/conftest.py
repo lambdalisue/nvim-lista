@@ -18,12 +18,12 @@ def nvim():
 
 
 @pytest.fixture
-def context():
-    from lista.context import Context
-    return Context()
-
-
-@pytest.fixture
-def lista(nvim, context):
-    from lista.lista import Lista
-    return Lista(nvim, context)
+def lista(nvim):
+    from lista.lista import Lista, Condition
+    return Lista(nvim, Condition(
+        text='',
+        caret_locus=0,
+        selected_index=0,
+        matcher_index=0,
+        case_index=0,
+    ))
