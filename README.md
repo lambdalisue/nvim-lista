@@ -16,7 +16,7 @@ Introductions
 -------------------------------------------------------------------------------
 [![asciicast](https://asciinema.org/a/87432.png)](https://asciinema.org/a/87432)
 
-**Note: This plugin is experimental**.
+*lista* is a plugin to filter content lines and jump to where you want.
 
 Install
 -------------------------------------------------------------------------------

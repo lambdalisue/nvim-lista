@@ -1,21 +1,27 @@
 *lista.txt*		A simple list filtering interface for buffer lines
 
-Version: 1.0.0
+Version: 1.0.0-dev
 Author : Alisue <lambdalisue@hashnote.net>
 License: MIT license
-Support: Vim 7.4 and above
+Support: Vim 8.0.0134 and above
+Support: Neovim 0.1.7 and above
 
 
-==============================================================================
-CONTENTS				*lista-contents*
+=============================================================================
+CONTENTS						*lista-contents*
 
 INTRODUCTION			|lista-introduction|
 USAGE				|lista-usage|
+INTERFACE			|lista-interface|
+  COMMANDS			|lista-commands|
+  VARIABLES			|lista-variables|
+  MAPPINGS			|lista-mappings|
+  MAPPING-ACTIONS		|lista-mapping-actions|
 
-==============================================================================
-INTRODUCTION				*lista-introduction*
+=============================================================================
+INTRODUCTION						*lista-introduction*
 
-Filter content lines and jump to where you want.
+*lista* is a plugin to filter content lines and jump to where you want.
 This plugin has inspired by the following plugins. Several codes are refined
 from the followings as well (See source code for the detail.)
 
@@ -24,10 +30,78 @@ Shougo/denite.nvim:	https://github.com/Shougo/denite.nvim
 Shougo/unite.vim:	https://github.com/Shougo/unite.vim
 
 
-==============================================================================
-USAGE					*lista-usage*
+=============================================================================
+USAGE							*lista-usage*
 
-The following mappings are available on the lista interface:
+Type |:Lista| to start filtering and hit <Return> to jump.
+It is recommended to assign mappings like:
+>
+	nnoremap <silent> #  :<C-u>Lista<CR>
+	nnoremap <silent> g# :<C-u>ListaCursorWord<CR>
+<
+
+=============================================================================
+INTERFACE						*lista-interface*
+
+-----------------------------------------------------------------------------
+COMMANDS						*lista-commands*
+
+						*:Lista*
+						*:ListaCursorWord*
+:Lista [{default}]
+:ListaCursorWord
+	Start a lista interface of the current buffer with {default} or word
+	under the cursor.
+	It always create a new fresh lista interface. See |:ListaResume| if
+	you would like to re-use the interface.
+
+						*:ListaResume*
+						*:ListaResumeCursorWord*
+:ListaResume [{default}]
+:ListaResumeCursorWord
+	Start a lista interface of the current buffer with {default} or word
+	under the cursor.
+	It use previous lista interface (e.g. matcher, ignorecase, cursor)
+	instead. If no {default} value is specified, it also use the previous
+	input.
+	See |:Lista| if you would like to use a fresh interface.
+
+-----------------------------------------------------------------------------
+VARIABLES						*lista-variables*
+
+						*g:lista#custom_mappings*
+g:lista#custom_mappings
+	A |List| of custom mappings.
+	It define a {lhs} key to a {rhs} key/action with {params}.
+	The {params} is a |String| which may contains
+
+	"noremap" -- Stop remapping like |:noremap| in Vim.
+	"nowait"  -- Do not wait like |:map-<nowait>| in Vim.
+	"expr"    -- Eval like |:map-<expr>| in Vim.
+
+	For example:
+>
+	let g:lista#custom_mapping = [
+	      \ ['<C-f>', '<Left>'],
+	      \ ['<C-b>', '<Right>'],
+	      \ ['<C-a>', '<Home>'],
+	      \ ['<C-e>', '<End>'],
+	      \ ['<C-d>', '<Del>'],
+	      \ ['<C-P>', '<lista:select_previous_candidate>', 'noremap'],
+	      \ ['<C-N>', '<lista:select_next_candidate>', 'noremap'],
+	      \ [';', 'pinkyless#stickyshift#enter(";")', 'expr noremap'],
+	      \]
+<
+	Note that "pinkyless#stickyshift#enter()" is a function which is
+	provided by a different Vim plugin (lambdalisue/pinkyless.vim).
+
+	See |lista-mapping-actions| to find available mapping actions.
+
+-----------------------------------------------------------------------------
+MAPPINGS						*lista-mappings*
+
+All mappings available in a Vim's command line (|ex-edit-index|) and the
+following extra mappings are available.
 
 	Key		Description~
 
@@ -35,24 +109,204 @@ The following mappings are available on the lista interface:
 	<C-M>		Accept the input and return the value
 	<Esc>		Cancel the input and return 0
 	<C-[>		Cancel the input and return 0
-	<BS>		Remove a character before the cursor
-	<C-H>		Remove a character before the cursor
-	<Del>		Delete a character on the cursor
-	<C-D>		Delete a character on the cursor
-	<Left>		Shift a cursor left
-	<C-F>		Shift a cursor left
-	<Right>		Shift a cursor right
-	<C-B>		Shift a cursor right
-	<Home>		Shift a cursor to the beginning
-	<C-A>		Shift a cursor to the beginning
-	<End>		Shift a cursor to the end
-	<C-E>		Shift a cursor to the end
-	<Up>		Use previous input history
-	<Down>		Use next input history
-	<C-R>		Start a paste mode as like |i_CTRL-R|
-	<C-g>		Select a next line
 	<C-t>		Select a previous line
+	<PageUp>  	Select a previous line
+	<S-Tab>  	Select a previous line
+	<C-g>		Select a next line
+	<PageDown>	Select a next line
+	<Tab>		Select a next line
 	<C-^>		Switch a matcher
+	<C-6>		Switch a matcher
+	<C-_>		Switch 'ignorecase' used in the prompt
+	<C-->		Switch 'ignorecase' used in the prompt
 
-==============================================================================
+To customize your mappings, use |g:lista#custom_mappings| variable.
+
+-----------------------------------------------------------------------------
+MAPPING-ACTIONS					*lista-mapping-actions*
+
+The following mapping actions are available.
+
+				*lista-map-accept*
+<lista:accept>
+	Jump to a corresponding line of selected and exit the interface. 
+
+				*lista-map-assign_next_matched_text*
+<lista:assign_next_matched_text>
+	Recall next command-line from history that matches pattern in
+	front of the cursor.
+	Like |c_<Down>| in a native Vim's command-line.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-assign_next_text*
+<lista:assign_next_text>
+	Recall next command-line from history.
+	Like |c_<S-Down>| in a native Vim's command-line.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-assign_previous_matched_text*
+<lista:assign_previous_matched_text>
+	Recall previous command-line from history that matches
+	pattern in front of the cursor.
+	Like |c_<Up>| in a native Vim's command-line.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-assign_previous_text*
+<lista:assign_previous_text>
+	Recall previous command-line from history.
+	Like |c_<S-Up>| in a native Vim's command-line.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-cancel*
+<lista:cancel>
+	Cancel selection and exit the interface. 
+
+				*lista-map-delete_char_before_caret*
+<lista:delete_char_before_caret>
+	Delete a character before the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_word_before_caret*
+<lista:delete_word_before_caret>
+	Delete a word before the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_char_after_caret*
+<lista:delete_char_after_caret>
+	Delete a character after the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_word_after_caret*
+<lista:delete_word_after_caret>
+	Delete a word after the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_char_under_caret*
+<lista:delete_char_under_caret>
+	Delete a character under the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_word_under_caret*
+<lista:delete_word_under_caret>
+	Delete a word under the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_text_before_caret*
+<lista:delete_text_before_caret>
+	Delete a text before the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_text_after_caret*
+<lista:delete_text_after_caret>
+	Delete a text after the caret.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-delete_entire_text*
+<lista:delete_entire_text>
+	Delete an entire text.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-insert_digraph*
+<lista:insert_digraph>
+	Insert or overstrike a |digraph| at the caret.
+	Like |c_<C-K>| in a Vim's native command-line.
+		See also |lista-map-toggle_insert_mode|.
+		Note this is a neovim-prompt's builtin action.
+
+				*lista-map-insert_special*
+<lista:insert_special>
+	Insert or overstrike a special character at the caret.
+	Like |c_<C-V>| in a Vim's native command-line.
+	See also |lista-map-toggle_insert_mode|.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_left*
+<lista:move_caret_to_left>
+	Move the caret to a one character left.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_one_word_left*
+<lista:move_caret_to_one_word_left>
+	Move the caret to a one word left.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_left_anchor*
+<lista:move_caret_to_left_anchor>
+	Move the caret like |F| in Vim's normal mode.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_right*
+<lista:move_caret_to_right>
+	Move the caret to a one character right.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_one_word_right*
+<lista:move_caret_to_one_word_right>
+	Move the caret to a one word right.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_right_anchor*
+<lista:move_caret_to_right_anchor>
+	Move the caret like |f| in Vim's normal mode.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_head*
+<lista:move_caret_to_head>
+	Move the caret to the head (a start of the text.)
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_lead*
+<lista:move_caret_to_lead>
+	Move the caret to the lead (a first printable character.)
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-move_caret_to_tail*
+<lista:move_caret_to_tail>
+	Move the caret to the tail (a end of the text.)
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-paste_from_register*
+<lista:paste_from_register>
+	Paste the text from a specified register.
+	Like |c_<C-R>| in a Vim's native command-line.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-paste_from_default_register*
+<lista:paste_from_default_register>
+	Paste the text from a default register (|v:register|).
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-select_next_candidate*
+<lista:select_next_candidate>
+	Select next candidate.
+
+				*lista-map-select_previous_candidate*
+<lista:select_previous_candidate>
+	Select previous candidate.
+
+				*lista-map-switch_case*
+<lista:switch_case>
+	Switch 'ignorecase' option used in the promopt.
+
+				*lista-map-switch_matcher*
+<lista:switch_matcher>
+	Switch matcher used in the promopt.
+
+				*lista-map-toggle_insert_mode*
+<lista:toggle_insert_mode>
+	Toggle insert mode (insert or overstrike).
+	Like |c_<Insert>| in a Vim's native command-line.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-yank_to_register*
+<lista:yank_to_register>
+	Yank a text into a specified register.
+	Note this is a neovim-prompt's builtin action.
+
+				*lista-map-yank_to_default_register*
+<lista:yank_to_default_register>
+	Yank a text into a default register (|v:register|).
+	Note this is a neovim-prompt's builtin action.
+
+=============================================================================
 vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
