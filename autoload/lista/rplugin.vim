@@ -11,12 +11,27 @@ def _temporary_scope():
     import rplugin
     from lista import start
     nvim = rplugin.Neovim(vim)
-    start(nvim, [nvim.eval('a:default')])
+    start(nvim, [nvim.eval('a:default')], False)
 _temporary_scope()
 del _temporary_scope
 EOC
 endfunction
 
+function! lista#rplugin#resume(default) abort
+  if !lista#rplugin#init()
+    return
+  endif
+  python3 << EOC
+def _temporary_scope():
+    import vim
+    import rplugin
+    from lista import start
+    nvim = rplugin.Neovim(vim)
+    start(nvim, [nvim.eval('a:default')], True)
+_temporary_scope()
+del _temporary_scope
+EOC
+endfunction
 
 function! lista#rplugin#init() abort
   if exists('s:supported')

@@ -8,18 +8,23 @@ try:
 
         @neovim.function('_lista_start', sync=True)
         def start(self, args):
-            return start(self.nvim, args)
+            return start(self.nvim, args, False)
+
+        @neovim.function('_lista_resume', sync=True)
+        def resume(self, args):
+            return start(self.nvim, args, True)
+
 except ImportError:
     pass
 
 
-def start(nvim, args):
+def start(nvim, args, resume):
     from .prompt.prompt import STATUS_ACCEPT
     from .lista import Lista, Condition
-    if '_lista_context' in nvim.current.buffer.vars:
-        condition = Condition(
-            **nvim.current.buffer.vars['_lista_context']
-        )
+    if resume and '_lista_context' in nvim.current.buffer.vars:
+        context = nvim.current.buffer.vars['_lista_context']
+        context['text'] = context['text'] if not args[0] else args[0]
+        condition = Condition(**context)
     else:
         condition = Condition(
             text=args[0],
