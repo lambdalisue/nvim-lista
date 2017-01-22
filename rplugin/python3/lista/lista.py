@@ -1,3 +1,4 @@
+import re
 from collections import namedtuple
 from lista.prompt.prompt import (  # type: ignore
     INSERT_MODE_INSERT,
@@ -9,6 +10,7 @@ from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 from .util import assign_content
 
+ANSI_ESCAPE = re.compile(r'\x1b\[[0-9a-zA-Z;]*m')
 
 CASE_SMART = 1
 CASE_IGNORE = 2
@@ -97,13 +99,16 @@ class Lista(Prompt):
     def on_init(self):
         self._buffer = self.nvim.current.buffer
         self._buffer_name = self.nvim.eval('simplify(expand("%:~:."))')
-        self._content = self._buffer[:]
+        self._content = list(map(
+            lambda x: ANSI_ESCAPE.sub('', x),
+            self._buffer[:]
+        ))
         self._line_count = len(self._content)
         self._indices = list(range(self._line_count))
         self._bufhidden = self._buffer.options['bufhidden']
         self._buffer.options['bufhidden'] = 'hide'
         self.nvim.command('noautocmd keepjumps enew')
-        self.nvim.current.buffer[:] = self._buffer[:]
+        self.nvim.current.buffer[:] = self._content
         self.nvim.current.buffer.options['buftype'] = 'nofile'
         self.nvim.current.buffer.options['bufhidden'] = 'wipe'
         self.nvim.current.buffer.options['buflisted'] = False
