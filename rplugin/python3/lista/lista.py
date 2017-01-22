@@ -107,6 +107,7 @@ class Lista(Prompt):
         self._indices = list(range(self._line_count))
         self._bufhidden = self._buffer.options['bufhidden']
         self._buffer.options['bufhidden'] = 'hide'
+        foldcolumn = self.nvim.current.window.options['foldcolumn']
         self.nvim.command('noautocmd keepjumps enew')
         self.nvim.current.buffer[:] = self._content
         self.nvim.current.buffer.options['buftype'] = 'nofile'
@@ -114,6 +115,7 @@ class Lista(Prompt):
         self.nvim.current.buffer.options['buflisted'] = False
         self.nvim.current.window.options['spell'] = False
         self.nvim.current.window.options['foldenable'] = False
+        self.nvim.current.window.options['foldcolumn'] = foldcolumn
         self.nvim.current.window.options['colorcolumn'] = ''
         self.nvim.current.window.options['cursorline'] = True
         self.nvim.current.window.options['cursorcolumn'] = False
