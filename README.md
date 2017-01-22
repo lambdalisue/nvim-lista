@@ -5,7 +5,7 @@ lista
 [![Travis CI](https://img.shields.io/travis/lambdalisue/lista.nvim/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/lista.nvim)
 [![Coverage Status](https://coveralls.io/repos/github/lambdalisue/lista.nvim/badge.svg?branch=master)](https://coveralls.io/github/lambdalisue/lista.nvim?branch=master)
 [![Code Quality](https://img.shields.io/scrutinizer/g/lambdalisue/neovim-prompt/master.svg)](https://scrutinizer-ci.com/g/lambdalisue/lista.nvim/?branch=master)
-![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-yellow.svg?style=flat-square)
+![Version 1.0.0-dev](https://img.shields.io/badge/version-1.0.0--dev-yellow.svg?style=flat-square)
 ![Support Neovim 0.1.6 or above](https://img.shields.io/badge/support-Neovim%200.1.6%20or%20above-green.svg?style=flat-square)
 ![Support Vim 8.0 or above](https://img.shields.io/badge/support-Vim%208.0.0%20or%20above-yellowgreen.svg?style=flat-square)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE.md)
