@@ -10,7 +10,7 @@ from .matcher.all import Matcher as AllMatcher
 from .matcher.fuzzy import Matcher as FuzzyMatcher
 from .util import assign_content
 
-ANSI_ESCAPE = re.compile(r'\x1b\[[0-9a-zA-Z;]*m')
+ANSI_ESCAPE = re.compile(r'\x1b\[[0-9a-zA-Z;]*?m')
 
 CASE_SMART = 1
 CASE_IGNORE = 2
