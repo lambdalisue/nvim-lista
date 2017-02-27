@@ -37,6 +37,7 @@ def start(nvim, args, resume):
             )
         lista = Lista(nvim, condition)
         status = lista.start()
+        nvim.command('redraw!')
         if status == STATUS_ACCEPT:
             nvim.call('cursor', [lista.selected_line, 0])
             nvim.command('normal! zvzz')
