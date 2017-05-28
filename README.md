@@ -83,7 +83,7 @@ nnoremap g# :<C-u>ListaCursorWord<CR>
 If you prefer to use `<C-n>/<C-p>` to select candidate, use
 
 ```vim
-let g:lista#custom_mapping = [
+let g:lista#custom_mappings = [
       \ ['<C-f>', '<Left>'],
       \ ['<C-b>', '<Right>'],
       \ ['<C-a>', '<Home>'],
