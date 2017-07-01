@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'rplugin/python3'))
 
 @pytest.fixture
 def nvim():
-    nvim = MagicMock(spec='neovim.Nvim')
+    nvim = MagicMock(autospec='neovim.Nvim')
     nvim.vars = {}
     nvim.options = {
         'encoding': 'utf-8',

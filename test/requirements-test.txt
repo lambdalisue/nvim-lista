@@ -1,0 +1,8 @@
+neovim
+pytest
+pytest-flake8
+pytest-mypy
+pytest-cov
+typed-ast
+enum34; python_version < '3.4'
+typing; python_version < '3.5'
