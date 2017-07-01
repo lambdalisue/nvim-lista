@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from typing import (
+from typing import (  # noqa: F401
     Iterator, Optional, Sequence, Tuple, Union, NamedTuple,
-    Callable,
+    Callable, Dict
 )
 from neovim import Nvim
 from .key import KeyCode
@@ -21,10 +21,11 @@ DefinitionBase = NamedTuple('DefinitionBase', [
     ('expr', bool),
 ])
 
+
 class Definition(DefinitionBase):
 
     @classmethod
-    def parse(cls, nvim: Nvim, rule: Rule) -> Definition: ...
+    def parse(cls, nvim: Nvim, rule: Rule) -> 'Definition': ...
 
 
 class Keymap:
